@@ -16,5 +16,7 @@ void init_memory(); // Function to initialize memory and registers
 instruction_t read_instruction(uint16_t address);
 data_word_t read_data(uint16_t address);
 void write_data(uint16_t address, data_word_t value);
+data_word_t read_register(uint8_t reg_num);
+void write_register(uint8_t reg_num, data_word_t value);
 
 #endif // MEMORY_H

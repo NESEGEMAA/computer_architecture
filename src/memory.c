@@ -56,3 +56,23 @@ void write_data(uint16_t address, data_word_t value) {
         exit(EXIT_FAILURE);
     }
 }
+
+// Function to read a register value
+data_word_t read_register(uint8_t reg_num) {
+    if (reg_num < REG_COUNT) {
+        return register_file[reg_num];
+    } else {
+        fprintf(stderr, "Error: Register read out of bounds at register %u\n", reg_num);
+        exit(EXIT_FAILURE);
+    }
+}
+
+// Function to write a value to a register
+void write_register(uint8_t reg_num, data_word_t value) {
+    if (reg_num < REG_COUNT) {
+        register_file[reg_num] = value;
+    } else {
+        fprintf(stderr, "Error: Register write out of bounds at register %u\n", reg_num);
+        exit(EXIT_FAILURE);
+    }
+}
