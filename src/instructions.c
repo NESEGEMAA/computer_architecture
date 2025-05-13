@@ -45,33 +45,56 @@ void update_zero_flag(int8_t result) {
     }
 }
 
-void ADD(uint8_t rd, uint8_t rs) {
+// Helper function to update flags based on the instruction
+void update_flags(Instruction instruction, int8_t destination, int8_t source, int16_t result) {
+    switch (instruction) {
+        case ADD:
+            update_carry_flag(result);
+            update_overflow_flag(destination, source, result);
+            update_negative_flag(result);
+            update_sign_flag();
+            update_zero_flag(result);
+            break;
+        case SUB:
+            update_overflow_flag(destination, source, result);
+            update_negative_flag(result);
+            update_sign_flag();
+            update_zero_flag(result);
+            break;
+        case MUL:
+        case ANDI:
+        case EOR:
+        case SAL:
+        case SAR:
+            update_negative_flag(result);
+            update_zero_flag(result);
+            break;
+        default:
+            // No flags to update for other instructions
+            break;
+    }
+}
+
+void _ADD(uint8_t rd, uint8_t rs) {
     // Add the values in registers rs and rd, store result in rd
     int8_t destination = read_register(rd);
     int8_t source = read_register(rs);
     int16_t result = destination + source;
 
     // Update relevant flags for ADD
-    update_carry_flag(result);
-    update_overflow_flag(destination, source, result);
-    update_negative_flag(result);
-    update_sign_flag();
-    update_zero_flag(result);
+    update_flags(ADD, destination, source, result);
 
     write_register(rd, (int8_t) result);
 }
 
-void SUB(uint8_t rd, uint8_t rs) {
+void _SUB(uint8_t rd, uint8_t rs) {
     // Subtract the values in registers rs from rd, store result in rd
     int8_t destination = read_register(rd);
     int8_t source = read_register(rs);
-    int8_t result = destination - source;
+    int16_t result = destination - source;
 
     // Update relevant flags for SUB
-    update_overflow_flag(destination, source, result);
-    update_negative_flag(result);
-    update_sign_flag();
-    update_zero_flag(result);
+    update_flags(SUB, destination, source, result);
 
-    write_register(rd, result);
+    write_register(rd, (int8_t) result);
 }
