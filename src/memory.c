@@ -1,5 +1,9 @@
 #include "memory.h"
 
+data_word_t register_file[REG_COUNT];        // Register file (R0-R63)
+data_word_t data_memory[DATA_MEMORY_SIZE];   // Data memory
+instruction_t instr_memory[INSTR_MEMORY_SIZE]; // Instruction memory
+
 // Function to initialize instruction memory
 void init_instr_memory() {
     for (uint16_t i = 0; i < INSTR_MEMORY_SIZE; i++) {
