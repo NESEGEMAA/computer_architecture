@@ -2,7 +2,7 @@
 
 data_word_t register_file[REG_COUNT];        // Register file (R0-R63)
 data_word_t data_memory[DATA_MEMORY_SIZE];   // Data memory
-instruction_t instr_memory[INSTR_MEMORY_SIZE]; // Instruction memory
+instruction_word_t instr_memory[INSTR_MEMORY_SIZE]; // Instruction memory
 
 // Function to initialize instruction memory
 void init_instr_memory() {
@@ -32,7 +32,7 @@ void init_memory() {
 }
 
 // Function to read an instruction from instruction memory
-instruction_t read_instruction(uint16_t address) {
+instruction_word_t read_instruction(uint16_t address) {
     if (address < INSTR_MEMORY_SIZE) {
         return instr_memory[address];
     } else {
