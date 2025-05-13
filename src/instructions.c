@@ -10,11 +10,19 @@ void update_carry_flag(int8_t result) {
 }
 
 // Helper function to update the Overflow flag (V)
-void update_overflow_flag(int8_t destination, int8_t source, int8_t result) {
-    if ((destination & 0b10000000) == (source & 0b10000000) && (result & 0b10000000) != (destination & 0b10000000)) {
-        SREG |= 0b00000010; // Set the overflow flag
-    } else {
-        SREG &= ~0b00000010; // Clear the overflow flag
+void update_overflow_flag(Instruction instruction, int8_t destination, int8_t source, int8_t result) {
+    if (instruction == ADD) {
+        if (((destination > 0) && (source > 0) && (result < 0)) || ((destination < 0) && (source < 0) && (result > 0))) {
+            SREG |= 0b00000010; // Set the overflow flag
+        } else {
+            SREG &= ~0b00000010; // Clear the overflow flag
+        }
+    } else if (instruction == SUB) {
+        if (((destination < 0) && (source > 0) && (result > 0)) || ((destination > 0) && (source < 0) && (result < 0))) {
+            SREG |= 0b00000010; // Set the overflow flag
+        } else {
+            SREG &= ~0b00000010; // Clear the overflow flag
+        }
     }
 }
 
@@ -50,13 +58,13 @@ void update_flags(Instruction instruction, int8_t destination, int8_t source, in
     switch (instruction) {
         case ADD:
             update_carry_flag(result);
-            update_overflow_flag(destination, source, result);
+            update_overflow_flag(instruction, destination, source, result);
             update_negative_flag(result);
             update_sign_flag();
             update_zero_flag(result);
             break;
         case SUB:
-            update_overflow_flag(destination, source, result);
+            update_overflow_flag(instruction, destination, source, result);
             update_negative_flag(result);
             update_sign_flag();
             update_zero_flag(result);
