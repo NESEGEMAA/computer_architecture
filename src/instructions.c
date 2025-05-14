@@ -128,7 +128,7 @@ void _BEQZ(uint8_t rs, int8_t immediate) {
     // Branch if the value in register rs is zero
     int8_t value = read_register(rs);
     if (value == 0) {
-        PC += 1 + immediate; 
+        PC += immediate; 
     }
 }
 
