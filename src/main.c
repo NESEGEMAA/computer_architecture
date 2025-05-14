@@ -1,7 +1,7 @@
 #include "globals.h"
 
 // Global variable definitions
-instruction_t PC = 0;            // Initialize Program Counter to 0
+instruction_word_t PC = 0;            // Initialize Program Counter to 0
 data_word_t SREG = 0;           // Initialize Status Register to 0
 
 int main() {

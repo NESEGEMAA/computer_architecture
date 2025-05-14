@@ -106,3 +106,50 @@ void _SUB(uint8_t rd, uint8_t rs) {
 
     write_register(rd, (int8_t) result);
 }
+
+void _MUL(uint8_t rd, uint8_t rs) {
+    // Multiply the values in registers rs and rd, store result in rd
+    int8_t destination = read_register(rd);
+    int8_t source = read_register(rs);
+    int16_t result = destination * source;
+
+    // Update relevant flags for MUL
+    update_flags(MUL, destination, source, result);
+
+    write_register(rd, (int8_t) result);
+}
+
+void _MOVI(uint8_t rd, int8_t immediate) {
+    // Move immediate value to register rd
+    write_register(rd, immediate);
+}
+
+void _BEQZ(uint8_t rs, int8_t immediate) {
+    // Branch if the value in register rs is zero
+    int8_t value = read_register(rs);
+    if (value == 0) {
+        PC += 1 + immediate; 
+    }
+}
+
+void _ANDI(uint8_t rd, int8_t immediate) {
+    // AND the values in registers rs and rd, store result in rd
+    int8_t destination = read_register(rd);
+    int16_t result = destination & immediate;
+
+    // Update relevant flags for ANDI
+    update_flags(ANDI, destination, immediate, result);
+
+    write_register(rd, (int8_t) result);
+}
+
+void _EOR(uint8_t rd, int8_t immediate) {
+    // EOR the values in registers rs and rd, store result in rd
+    int8_t destination = read_register(rd);
+    int16_t result = destination ^ immediate;
+
+    // Update relevant flags for EOR
+    update_flags(EOR, destination, immediate, result);
+
+    write_register(rd, (int8_t) result);
+}
