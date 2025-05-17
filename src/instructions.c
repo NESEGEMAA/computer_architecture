@@ -179,14 +179,14 @@ void _ANDI(uint8_t rd, int8_t immediate)
     write_register(rd, (int8_t)result);
 }
 
-void _EOR(uint8_t rd, int8_t immediate)
+void _EOR(uint8_t rd, uint8_t rs)
 {
     // EOR the values in registers rs and rd, store result in rd
     int8_t destination = read_register(rd);
-    int16_t result = destination ^ immediate;
+    int16_t result = destination ^ rs;
 
     // Update relevant flags for EOR
-    update_flags(EOR, destination, immediate, result);
+    update_flags(EOR, destination, rs, result);
 
     write_register(rd, (int8_t)result);
 }
@@ -202,6 +202,7 @@ void _BR(uint8_t rd, uint8_t rs)
 
     PC = new_pc;
 }
+
 void _SAL(uint8_t rd, int8_t immediate)
 {
     // Shift Arithmetic Left - shift the value in rd left by immediate bits
