@@ -7,7 +7,7 @@
 #include "instruction_map.h"
 
 // Type definitions for assembler
-typedef uint8_t  data_word_t;     // 8-bit data word
+typedef int8_t data_word_t;     // 8-bit data word
 typedef uint16_t instruction_word_t;    // 16-bit instruction word
 
 // Global variable declarations

@@ -1,4 +1,5 @@
 #include "instructions.h"
+#include "pipelining.h"
 
 // Helper function to update the Carry flag (C)
 void update_carry_flag(int8_t result) {
@@ -143,13 +144,39 @@ void _ANDI(uint8_t rd, int8_t immediate) {
     write_register(rd, (int8_t) result);
 }
 
-void _EOR(uint8_t rd, int8_t immediate) {
-    // EOR the values in registers rs and rd, store result in rd
-    int8_t destination = read_register(rd);
-    int16_t result = destination ^ immediate;
+void _EOR(uint8_t rd, uint8_t rs) {
+    int8_t destination = read_register(rd); // Read Rd value
+    int8_t source = read_register(rs);      // Read Rs value
+    int16_t result = destination ^ source;  // Perform XOR
+    update_flags(EOR, destination, source, result); // Update N, Z flags (page 26)
+    write_register(rd, (int8_t)result);     // Write result to Rd
+}
 
-    // Update relevant flags for EOR
-    update_flags(EOR, destination, immediate, result);
+// Missing instruction implementations
+void _BR(uint8_t r1, uint8_t r2) {
+    PC = ((uint16_t)read_register(r1) << 8) | read_register(r2);
+}
 
-    write_register(rd, (int8_t) result);
+void _SAL(uint8_t rd, int8_t imm) {
+    int8_t value = read_register(rd);
+    int16_t result = value << (imm & 0x3F);
+    update_flags(SAL, value, 0, result);
+    write_register(rd, (int8_t)result);
+}
+
+void _SAR(uint8_t rd, int8_t imm) {
+    int8_t value = read_register(rd);
+    int16_t result = value >> (imm & 0x3F);
+    update_flags(SAR, value, 0, result);
+    write_register(rd, (int8_t)result);
+}
+
+void _LDR(uint8_t rd, int8_t address) {
+    data_word_t value = read_data(address & 0x3F);
+    write_register(rd, value);
+}
+
+void _STR(uint8_t rd, int8_t address) {
+    data_word_t value = read_register(rd);
+    write_data(address & 0x3F, value);
 }
