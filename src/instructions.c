@@ -153,30 +153,30 @@ void _EOR(uint8_t rd, uint8_t rs) {
 }
 
 // Missing instruction implementations
-void _BR(uint8_t r1, uint8_t r2) {
-    PC = ((uint16_t)read_register(r1) << 8) | read_register(r2);
-}
+// void _BR(uint8_t r1, uint8_t r2) {
+//     PC = ((uint16_t)read_register(r1) << 8) | read_register(r2);
+// }
 
-void _SAL(uint8_t rd, int8_t imm) {
-    int8_t value = read_register(rd);
-    int16_t result = value << (imm & 0x3F);
-    update_flags(SAL, value, 0, result);
-    write_register(rd, (int8_t)result);
-}
+// void _SAL(uint8_t rd, int8_t imm) {
+//     int8_t value = read_register(rd);
+//     int16_t result = value << (imm & 0x3F);
+//     update_flags(SAL, value, 0, result);
+//     write_register(rd, (int8_t)result);
+// }
 
-void _SAR(uint8_t rd, int8_t imm) {
-    int8_t value = read_register(rd);
-    int16_t result = value >> (imm & 0x3F);
-    update_flags(SAR, value, 0, result);
-    write_register(rd, (int8_t)result);
-}
+// void _SAR(uint8_t rd, int8_t imm) {
+//     int8_t value = read_register(rd);
+//     int16_t result = value >> (imm & 0x3F);
+//     update_flags(SAR, value, 0, result);
+//     write_register(rd, (int8_t)result);
+// }
 
-void _LDR(uint8_t rd, int8_t address) {
-    data_word_t value = read_data(address & 0x3F);
-    write_register(rd, value);
-}
+// void _LDR(uint8_t rd, int8_t address) {
+//     data_word_t value = read_data(address & 0x3F);
+//     write_register(rd, value);
+// }
 
-void _STR(uint8_t rd, int8_t address) {
-    data_word_t value = read_register(rd);
-    write_data(address & 0x3F, value);
-}
+// void _STR(uint8_t rd, int8_t address) {
+//     data_word_t value = read_register(rd);
+//     write_data(address & 0x3F, value);
+// }
