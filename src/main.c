@@ -39,7 +39,7 @@
 
 #include "parser.h"
 
-int main(int argc, char* argv[]) {
+/*int main(int argc, char* argv[]) {
     if (argc != 2) {
         fprintf(stderr, "Usage: %s <assembly_file>\n", argv[0]);
         return 1;
@@ -78,4 +78,4 @@ int main(int argc, char* argv[]) {
     free_instructions(instructions);
     
     return 0;
-}
+}*/
