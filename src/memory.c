@@ -7,22 +7,19 @@ data_word_t register_file[REG_COUNT];               // Register file (R0-R63)
 data_word_t data_memory[DATA_MEMORY_SIZE];          // Data memory
 instruction_word_t instr_memory[INSTR_MEMORY_SIZE]; // Instruction memory
 
-IF_ID if_id = {0}; // Instruction Fetch to Decode stage
-ID_EX id_ex = {0}; // Decode to Execute stage
-
 // Function to initialize instruction memory
 void init_instr_memory()
 {
-    for (uint16_t i = 0; i < INSTR_MEMORY_SIZE; i++)
+    for (int16_t i = 0; i < INSTR_MEMORY_SIZE; i++)
     {
-        instr_memory[i] = 0; // Initialize all instructions to 0
+        instr_memory[i] = UNDEFINED_INT16; // Initialize all instructions to 0
     }
 }
 
 // Function to initialize data memory
 void init_data_memory()
 {
-    for (uint16_t i = 0; i < DATA_MEMORY_SIZE; i++)
+    for (int16_t i = 0; i < DATA_MEMORY_SIZE; i++)
     {
         data_memory[i] = 0; // Initialize all data memory to 0
     }
@@ -58,6 +55,20 @@ instruction_word_t read_instruction(uint16_t address)
     }
 }
 
+
+void write_instruction(uint16_t address, instruction_word_t value)
+{
+    if (address < INSTR_MEMORY_SIZE)
+    {
+        instr_memory[address] = value;
+    }
+    else
+    {
+        fprintf(stderr, "Error: Instruction memory write out of bounds at address %u\n", address);
+        exit(EXIT_FAILURE);
+    }
+}
+
 // Function to read data from data memory
 data_word_t read_data(uint16_t address)
 {
@@ -89,7 +100,7 @@ void write_data(uint16_t address, data_word_t value)
 // Function to read a register value
 data_word_t read_register(uint8_t reg_num)
 {
-    if (reg_num < REG_COUNT)
+    if (reg_num < REG_COUNT && reg_num >= 0)
     {
         return register_file[reg_num];
     }
@@ -103,7 +114,7 @@ data_word_t read_register(uint8_t reg_num)
 // Function to write a value to a register
 void write_register(uint8_t reg_num, data_word_t value)
 {
-    if (reg_num < REG_COUNT)
+    if (reg_num < REG_COUNT && reg_num >= 0)
     {
         register_file[reg_num] = value;
     }

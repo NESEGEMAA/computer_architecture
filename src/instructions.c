@@ -1,5 +1,5 @@
 #include "instructions.h"
-#include "pipelining.h"
+#include "pipeline.h"
 
 // Helper function to update the Carry flag (C)
 void update_carry_flag(int8_t result)
@@ -112,101 +112,140 @@ void update_flags(Instruction instruction, int8_t destination, int8_t source, in
     }
 }
 
-void _ADD(uint8_t rd, uint8_t rs)
+void _ADD()
 {
-    // Add the values in registers rs and rd, store result in rd
-    int8_t destination = read_register(rd);
-    int8_t source = read_register(rs);
+    ID_EX id_ex = *(peek_id_ex(&id_ex_queue)); // Decode to Execute stage
+    data_word_t destination = id_ex.r1_value;
+    data_word_t source = id_ex.r2_value;
     int16_t result = destination + source;
 
     // Update relevant flags for ADD
     update_flags(ADD, destination, source, result);
 
+    uint8_t rd = id_ex.r1;
     write_register(rd, (int8_t)result);
+
+    printf("ADD: R%u = %d + %d = %d\n", rd, destination, source, result);
 }
 
-void _SUB(uint8_t rd, uint8_t rs)
+void _SUB()
 {
-    // Subtract the values in registers rs from rd, store result in rd
-    int8_t destination = read_register(rd);
-    int8_t source = read_register(rs);
+    ID_EX id_ex = *(peek_id_ex(&id_ex_queue)); // Decode to Execute stage
+    data_word_t destination = id_ex.r1_value;
+    data_word_t source = id_ex.r2_value;
     int16_t result = destination - source;
 
     // Update relevant flags for SUB
     update_flags(SUB, destination, source, result);
 
+    uint8_t rd = id_ex.r1;
     write_register(rd, (int8_t)result);
+
+    printf("SUB: R%u = %d - %d = %d\n", rd, destination, source, result);
 }
 
-void _MUL(uint8_t rd, uint8_t rs)
+void _MUL()
 {
-    // Multiply the values in registers rs and rd, store result in rd
-    int8_t destination = read_register(rd);
-    int8_t source = read_register(rs);
+    ID_EX id_ex = *(peek_id_ex(&id_ex_queue)); // Decode to Execute stage
+    data_word_t destination = id_ex.r1_value;
+    data_word_t source = id_ex.r2_value;
     int16_t result = destination * source;
 
     // Update relevant flags for MUL
     update_flags(MUL, destination, source, result);
 
+    uint8_t rd = id_ex.r1;
     write_register(rd, (int8_t)result);
+
+    printf("MUL: R%u = %d * %d = %d\n", rd, destination, source, result);
 }
 
-void _MOVI(uint8_t rd, int8_t immediate)
+void _MOVI()
 {
+    ID_EX id_ex = *(peek_id_ex(&id_ex_queue)); // Decode to Execute stage
+    uint8_t rd = id_ex.r1;
+    int8_t immediate = id_ex.immediate;
+
     // Move immediate value to register rd
     write_register(rd, immediate);
+
+    printf("MOVI: R%u = %d\n", rd, immediate);
 }
 
-void _BEQZ(uint8_t rs, int8_t immediate)
+void _BEQZ()
 {
-    // Branch if the value in register rs is zero
-    int8_t value = read_register(rs);
+    ID_EX id_ex = *(peek_id_ex(&id_ex_queue)); // Decode to Execute stage
+    int8_t value = id_ex.r1_value;
+    int8_t immediate = id_ex.immediate;
     if (value == 0)
     {
         PC += immediate;
     }
+
+    printf("BEQZ: R%u = %d, PC = %d\n", id_ex.r1, value, PC);
 }
 
-void _ANDI(uint8_t rd, int8_t immediate)
+void _ANDI()
 {
+    ID_EX id_ex = *(peek_id_ex(&id_ex_queue)); // Decode to Execute stage
+
     // AND the values in registers rs and rd, store result in rd
-    int8_t destination = read_register(rd);
-    int16_t result = destination & immediate;
+    int8_t destination = id_ex.r1_value;
+    int8_t immediate = id_ex.immediate;
+    int8_t result = destination & immediate;
 
     // Update relevant flags for ANDI
     update_flags(ANDI, destination, immediate, result);
 
-    write_register(rd, (int8_t)result);
+    uint8_t rd = id_ex.r1;
+    write_register(rd, result);
+
+    printf("ANDI: R%u = %d & %d = %d\n", rd, destination, immediate, result);
 }
 
-void _EOR(uint8_t rd, uint8_t rs)
+void _EOR()
 {
+    ID_EX id_ex = *(peek_id_ex(&id_ex_queue)); // Decode to Execute stage
+
     // EOR the values in registers rs and rd, store result in rd
-    int8_t destination = read_register(rd);
-    int16_t result = destination ^ rs;
+    int8_t destination = id_ex.r1_value;
+    int8_t source = id_ex.r2_value;
+    int8_t result = destination ^ source;
 
     // Update relevant flags for EOR
-    update_flags(EOR, destination, rs, result);
+    
+    uint8_t rs = id_ex.r2;
+    uint8_t rd = id_ex.r1;
 
-    write_register(rd, (int8_t)result);
+    update_flags(EOR, destination, rs, result);
+    write_register(rd, result);
+
+    printf("EOR: R%u = %d ^ %d = %d\n", rd, destination, source, result);
 }
 
-void _BR(uint8_t rd, uint8_t rs)
+void _BR()
 {
+    ID_EX id_ex = *(peek_id_ex(&id_ex_queue)); // Decode to Execute stage
+
     // Branch Register - set the PC to the concatenated value of registers rd and rs
-    int8_t high_byte = read_register(rd);
-    int8_t low_byte = read_register(rs);
+    int8_t high_byte = id_ex.r1_value;
+    int8_t low_byte = id_ex.r2_value;
 
     // Concatenate the two registers to form a 16-bit address
     uint16_t new_pc = ((uint16_t)(uint8_t)high_byte << 8) | (uint8_t)low_byte;
 
     PC = new_pc;
+
+    printf("BR: PC = %d\n", PC);
 }
 
-void _SAL(uint8_t rd, int8_t immediate)
+void _SAL()
 {
+    ID_EX id_ex = *(peek_id_ex(&id_ex_queue)); // Decode to Execute stage
+
     // Shift Arithmetic Left - shift the value in rd left by immediate bits
-    int8_t destination = read_register(rd);
+    int8_t destination = id_ex.r1_value;
+    int8_t immediate = id_ex.immediate;
     int16_t result = 0;
 
     // Perform shift only if immediate is positive
@@ -223,32 +262,54 @@ void _SAL(uint8_t rd, int8_t immediate)
     // Update relevant flags for SAL
     update_flags(SAL, destination, immediate, result);
 
+    uint8_t rd = id_ex.r1;
     write_register(rd, (int8_t)result);
+
+    printf("SAL: R%u = %d << %d = %d\n", rd, destination, immediate, result);
 }
 
-void _SAR(uint8_t rd, int8_t immediate)
+void _SAR()
 {
+    ID_EX id_ex = *(peek_id_ex(&id_ex_queue)); // Decode to Execute stage
+
     // Shift Arithmetic Right - shift the value in rd right by immediate bits
     // This preserves the sign bit
-    int8_t destination = read_register(rd);
+    int8_t destination = id_ex.r1_value;
+    int8_t immediate = id_ex.immediate;
     int16_t result = destination >> immediate;
 
     // Update relevant flags for SAR
     update_flags(SAR, destination, immediate, result);
 
+    uint8_t rd = id_ex.r1;
     write_register(rd, (int8_t)result);
+
+    printf("SAR: R%u = %d >> %d = %d\n", rd, destination, immediate, result);
 }
 
-void _LDR(uint8_t rd, uint16_t address)
+void _LDR()
 {
+    ID_EX id_ex = *(peek_id_ex(&id_ex_queue)); // Decode to Execute stage
+
     // Load to Register - load value from memory at address into register rd
-    int8_t value = read_data(address);
+    int8_t value = read_data(id_ex.immediate);
+
+    uint8_t rd = id_ex.r1;
     write_register(rd, value);
+
+    printf("LDR: R%u = %d\n", rd, value);
 }
 
-void _STR(uint8_t rd, uint16_t address)
+void _STR()
 {
+    ID_EX id_ex = *(peek_id_ex(&id_ex_queue)); // Decode to Execute stage
+
     // Store from Register - store value from register rd into memory at address
+    uint8_t rd = id_ex.r1;
     int8_t value = read_register(rd);
+    int8_t address = id_ex.immediate;
+
     write_data(address, value);
+
+    printf("STR: Memory[%d] = %d\n", address, value);
 }

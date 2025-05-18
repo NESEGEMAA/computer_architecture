@@ -1,18 +1,24 @@
-#include "globals.h"
-#include "pipelining.h"
-#include "memory.h"
 #include <stdio.h>
-#include "../include/parser.h"
+#include "globals.h"
+#include "pipeline.h"
+#include "memory.h"
+#include "parser.h"
 
 // Global variable definitions
 instruction_word_t PC = 0;            // Initialize Program Counter to 0
 data_word_t SREG = 0;                 // Initialize Status Register to 0
+
+queue if_id_queue;
+queue id_ex_queue;
+int sys_call = 1;
 
 int main() {
     printf("Computer Architecture Simulator Starting...\n");
     
     // Initialize all memory and registers
     init_memory();
+    queue if_id_queue = *(createQueue()); // Instruction Fetch to Decode stage
+    queue id_ex_queue = *(createQueue()); // Decode to Execute stage
     
     // Load and parse assembly program directly into instruction memory
     uint16_t program_size = parse_and_load_assembly_file("../src/CSEN.txt");
@@ -30,51 +36,15 @@ int main() {
         printf("R%02d: 0x%08X (%d)\n", i, read_register(i), read_register(i));
     }
     
-    // Simple execution simulation (non-pipelined)
-    printf("\nStarting Execution...\n");
+    // Simple execution simulation
+    printf("\nStarting Simulation...\n");
     printf("-------------------------------------------\n");
     
     PC = 0;  // Reset program counter
-    while (PC < program_size) {
-        // Fetch
-        instruction_word_t instr = read_instruction(PC);
-        printf("PC: %03d - Executing instruction: 0x%04X\n", PC, instr);
-        
-        // Simple decode and execute (for testing)
-        uint8_t opcode = (instr >> 12) & 0xF;
-        uint8_t r1 = (instr >> 6) & 0x3F;
-        uint8_t r2 = instr & 0x3F;
-        int16_t imm = instr & 0xFF;
-        
-        switch(opcode) {
-            case MOVI:
-                write_register(r1, imm);
-                printf("  MOVI R%d, %d  -> R%d = %d\n", r1, imm, r1, imm);
-                break;
-            case ADD: {
-                data_word_t val1 = read_register(r1);
-                data_word_t val2 = read_register(r2);
-                data_word_t result = val1 + val2;
-                write_register(r1, result);
-                printf("  ADD R%d, R%d  -> R%d = %d + %d = %d\n", 
-                      r1, r2, r1, val1, val2, result);
-                break;
-            }
-            case EOR: {
-                data_word_t val1 = read_register(r1);
-                data_word_t val2 = read_register(r2);
-                data_word_t result = val1 ^ val2;
-                write_register(r1, result);
-                printf("  EOR R%d, R%d  -> R%d = %d ^ %d = %d\n", 
-                      r1, r2, r1, val1, val2, result);
-                break;
-            }
-            // Add cases for other instructions as needed...
-            default:
-                printf("  Unknown opcode: %d\n", opcode);
-        }
-        
-        PC++;  // Move to next instruction
+    int sys_call = 1;
+
+    while (sys_call) {
+        pipeline_cycle();
     }
     
     // Print final register states

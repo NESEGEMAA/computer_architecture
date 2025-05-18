@@ -1,81 +1,108 @@
 #include <stdio.h>
 #include "decoder.h"
 
+int is_r_format;
+
 // Function to check if instruction is R-Format
-int is_r_format(uint8_t opcode) {
+int isit_r_format(uint8_t opcode)
+{
     return (opcode == ADD ||
-        opcode == SUB ||
-        opcode == MUL ||
-        opcode == EOR ||
-        opcode == BR);
+            opcode == SUB ||
+            opcode == MUL ||
+            opcode == EOR ||
+            opcode == BR);
 }
 
 // Function to check if instruction needs sign extension for immediate
-int needs_sign_extension(uint8_t opcode) {
+int needs_sign_extension(uint8_t opcode)
+{
     // SAL and SAR use positive immediates; others use signed immediates
     return (opcode == MOVI ||
-        opcode == BEQZ ||
-        opcode == ANDI );
+            opcode == BEQZ ||
+            opcode == ANDI);
 }
 
 // Function to decode an instruction
-DecodedInstruction decode_stage(uint16_t instruction, uint16_t pc, int cycle) {
-    DecodedInstruction decoded;
-    decoded.pc = pc;
-    decoded.instruction = instruction;
+void decode_stage()
+{
+    IF_ID if_id = *(peek_if_id(&if_id_queue)); // Instruction Fetch to Decode stage
+    ID_EX id_ex = {0}; // Decode to Execute stage
 
-    if (instruction == 0) {
-        printf("Cycle %d: Decode stage is empty\n", cycle);
-        decoded.opcode = 0;
-        decoded.r1 = 0;
-        decoded.r2 = 0;
-        decoded.immediate = 0;
-        decoded.is_r_format = 0;
-        return decoded;
-    }
+    uint16_t instruction = if_id.instr; // Get instruction from IF/ID stage
+    id_ex.pc = if_id.pc;
+    id_ex.instruction = instruction;
 
-    // Extract opcode (bits 15:12)
-    decoded.opcode = (instruction >> 12) & 0xF;
+    if (if_id.instr != UNDEFINED_INT16)
+    {
+        // if (instruction == 0) {
+        //     // printf("Cycle %d: Decode stage is empty\n", cycle);
+        //     id_ex.opcode = 0;
+        //     id_ex.r1 = 0;
+        //     id_ex.r2 = 0;
+        //     id_ex.immediate = 0;
 
-    // Determine instruction format
-    decoded.is_r_format = is_r_format(decoded.opcode);
+        //     fprintf(stderr, "Error: incorrect instruction\n");
+        //     exit(EXIT_FAILURE);
+        // }
 
-    if (decoded.is_r_format) {
-        // R-Format: OPCODE (4 bits), R1 (6 bits), R2 (6 bits)
-        decoded.r1 = (instruction >> 6) & 0x3F; // bits 11-6
-        decoded.r2 = instruction & 0x3F;        // bits 5-0
-        decoded.immediate = 0;                   // not used
-    }
-    else {
-        // I-Format: OPCODE (4 bits), R1 (6 bits), IMMEDIATE (6 bits)
-        decoded.r1 = (instruction >> 6) & 0x3F; // bits 11-6
-        decoded.r2 = 0;                         // not used
-        // Extract 6-bit immediate
-        uint8_t imm = instruction & 0x3F;       // bits 5-0
-        // Sign-extend if needed (for MOVI, BEQZ, ANDI, LDR, STR)
-        if (needs_sign_extension(decoded.opcode)) {
-            decoded.immediate = (imm & 0x20) ? (imm | 0xC0) : imm; // Sign-extend to 8 bits
+        // Extract opcode (bits 15:12)
+        id_ex.opcode = (instruction >> 12) & 0xF;
+
+        // Determine instruction format
+        is_r_format = isit_r_format(id_ex.opcode);
+
+        if (is_r_format)
+        {
+            // R-Format: OPCODE (4 bits), R1 (6 bits), R2 (6 bits)
+            id_ex.r1 = (instruction >> 6) & 0x3F; // bits 11-6
+            id_ex.r2 = instruction & 0x3F;        // bits 5-0
+            id_ex.immediate = 0;                  // not used
+
+            id_ex.r1_value = read_register(id_ex.r1); // Read R1 value
+            id_ex.r2_value = read_register(id_ex.r2); // Read R2 value
         }
-        else {
-            decoded.immediate = imm; // Positive immediate for SAL, SAR
+        else
+        {
+            // I-Format: OPCODE (4 bits), R1 (6 bits), IMMEDIATE (6 bits)
+            id_ex.r1 = (instruction >> 6) & 0x3F; // bits 11-6
+            id_ex.r2 = 0;                         // not used
+            // Extract 6-bit immediate
+            uint8_t imm = instruction & 0x3F;         // bits 5-0
+            id_ex.r1_value = read_register(id_ex.r1); // Read R1 value
+
+            // Sign-extend if needed (for MOVI, BEQZ, ANDI, LDR, STR)
+            if (needs_sign_extension(id_ex.opcode))
+            {
+                id_ex.immediate = (imm & 0x20) ? (imm | 0xC0) : imm; // Sign-extend to 8 bits
+            }
+            else
+            {
+                id_ex.immediate = imm; // Positive immediate for SAL, SAR
+            }
         }
-    }
 
-    // Print decode stage information (register numbers only, no values)
-    printf("Cycle %d: Decode Stage\n", cycle);
-    printf("  Instruction: 0x%04X\n", instruction);
-    printf("  Opcode: %u\n", decoded.opcode);
-    printf("  Format: %s\n", decoded.is_r_format ? "R-Format" : "I-Format");
-    printf("  R1: R%u\n", decoded.r1);
-    if (decoded.is_r_format) {
-        printf("  R2: R%u\n", decoded.r2);
-    }
-    else {
-        printf("  Immediate: %d\n", decoded.immediate);
-    }
-    printf("  PC: %u\n", decoded.pc);
+        dequeue_if_id(&if_id_queue); // Dequeue from IF to ID stage
+        enqueue_id_ex(&id_ex_queue, &id_ex); // Enqueue to Decode to Execute stage
 
-    return decoded;
+        // Print decode stage information (register numbers only, no values)
+        // printf("Cycle %d: Decode Stage\n", cycle);
+        printf("Decode Stage:\n");
+        printf("  Instruction: 0x%04X\n", instruction);
+        printf("  Opcode: %u\n", id_ex.opcode);
+        printf("  Format: %s\n", is_r_format ? "R-Format" : "I-Format");
+        printf("  R1: R%u\n", id_ex.r1);
+        if (is_r_format)
+        {
+            printf("  R2: R%u\n", id_ex.r2);
+        }
+        else
+        {
+            printf("  Immediate: %d\n", id_ex.immediate);
+        }
+        printf("  PC: %u\n", id_ex.pc);
+
+        return;
+    }
 }
 
 // Main function for testing decode stage with CSEN.txt
@@ -102,7 +129,7 @@ DecodedInstruction decode_stage(uint16_t instruction, uint16_t pc, int cycle) {
 //         print_instruction(&instructions[i]);
 
 //         // Decode the instruction (use index as PC, i+1 as cycle)
-//         DecodedInstruction decoded = decode_stage(instructions[i].binary, i, i + 1);
+//         nstruction = decode_stage(instructions[i].binary, i, i + 1);
 //     }
 
 //     // Free the parsed instructions
@@ -110,7 +137,7 @@ DecodedInstruction decode_stage(uint16_t instruction, uint16_t pc, int cycle) {
 //     return 0;
 // }
 
-//Expected Output:
+// Expected Output:
 /*Cycle 1:
 Parsed Instruction :
 Opcode: MOVI(3), Type : I, R1 : R1, Immediate : 10, Binary : 0xC04A
