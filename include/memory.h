@@ -1,20 +1,25 @@
 #ifndef MEMORY_H
 #define MEMORY_H
+
 #include "globals.h"
-#include <stdio.h>  // For fprintf
-#include <stdlib.h> // For exit
+#include <stdio.h>
+#include <stdlib.h>
 
 // Memory and Register File Declarations
-#define REG_COUNT 64           // 16 registers (R0-R63)
-#define DATA_MEMORY_SIZE 2048  // 2048 bytes of data memory
-#define INSTR_MEMORY_SIZE 1024 // 1024 instructions
+#define REG_COUNT 64
+#define DATA_MEMORY_SIZE 2048
+#define INSTR_MEMORY_SIZE 1024
 
 // Memory arrays
 extern data_word_t register_file[REG_COUNT];
 extern data_word_t data_memory[DATA_MEMORY_SIZE];
 extern instruction_word_t instr_memory[INSTR_MEMORY_SIZE];
 
-void init_memory(); // Function to initialize memory and registers
+// Function declarations
+void init_memory();
+void init_instr_memory();
+void init_data_memory();
+void init_register_file();
 instruction_word_t read_instruction(uint16_t address);
 data_word_t read_data(uint16_t address);
 void write_data(uint16_t address, data_word_t value);

@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "../include/globals.h"
+#include "memory.h" 
 
 // Define the instruction types
 typedef enum
@@ -54,5 +55,6 @@ void print_instruction(const InstructionParser *instr);
  * @param instructions the array of instructions to free
  */
 void free_instructions(InstructionParser *instructions);
+uint16_t parse_and_load_assembly_file(const char *file_path);
 
 #endif /* PARSER_H */
