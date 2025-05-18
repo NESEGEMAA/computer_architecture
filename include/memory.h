@@ -14,7 +14,22 @@ extern data_word_t register_file[REG_COUNT];
 extern data_word_t data_memory[DATA_MEMORY_SIZE];
 extern instruction_word_t instr_memory[INSTR_MEMORY_SIZE];
 
-void init_memory(); // Function to initialize memory and registers
+// Pipelining intermittent variables
+typedef struct {
+    instruction_word_t instr; // 16-bit instruction
+    instruction_word_t pc;   // PC at fetch time
+} IF_ID;
+
+typedef struct {
+    instruction_word_t instr; // 16-bit instruction
+    instruction_word_t pc;   // PC at fetch time
+    uint8_t opcode;          // Decoded opcode (0–11)
+    uint8_t r1, r2;          // Register indices
+    int8_t imm;              // Immediate value (signed)
+} ID_EX;
+
+// Function declarations
+void init_memory();
 instruction_word_t read_instruction(uint16_t address);
 data_word_t read_data(uint16_t address);
 void write_data(uint16_t address, data_word_t value);
