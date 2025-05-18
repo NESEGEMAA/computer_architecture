@@ -3,15 +3,16 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdint.h>  // For fixed-width integer types
-#include "instruction_map.h"
-
-// Type definitions for assembler
-typedef int8_t data_word_t;     // 8-bit data word
-typedef uint16_t instruction_word_t;    // 16-bit instruction word
+#include "types.h"
+#include "queue.h"
 
 // Global variable declarations
 extern instruction_word_t PC;          // Program Counter
 extern data_word_t SREG;         // Status Register
+
+extern queue if_id_queue; // Instruction Fetch to Decode stage
+extern queue id_ex_queue; // Decode to Execute stage
+
+extern int sys_call; // Flag to indicate end of execution
 
 #endif // GLOBALS_H

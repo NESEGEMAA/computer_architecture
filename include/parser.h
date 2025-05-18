@@ -1,24 +1,17 @@
-/**
- * parser.h
- * Header file for the parser module of Package 3: Double Big Harvard combo large arithmetic shifts
- */
-
 #ifndef PARSER_H
 #define PARSER_H
 
+#include "globals.h"
 #include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
-#include "../include/globals.h"
 #include "memory.h" 
 
 // Define the instruction types
-typedef enum
-{
-    R_TYPE, // Register type
-    I_TYPE  // Immediate type
-} InstructionType;
+// typedef enum
+// {
+//     R_TYPE, // Register type
+//     I_TYPE  // Immediate type
+// } InstructionType;
 
 // Define opcodes for each instruction
 
@@ -26,11 +19,11 @@ typedef enum
 typedef struct
 {
     Opcode opcode;
-    InstructionType type;
-    uint8_t r1;
-    uint8_t r2;
-    int16_t immediate;
-    uint16_t binary; // The binary representation of the instruction
+    // InstructionType type;
+    uint8_t operand_1;
+    uint8_t operand_2;
+    // int16_t immediate;
+    // uint16_t binary; // The binary representation of the instruction
 } InstructionParser;
 
 /**

@@ -2,8 +2,8 @@
 #define DECODER_H
 
 #include <stdint.h>
-#include "memory.h"
 #include "parser.h"
+#include "queue.h"
 
 // Define constants for Package 3
 #define INSTRUCTION_SIZE 16
@@ -11,24 +11,21 @@
 #define REG_BITS 6
 #define IMMEDIATE_BITS 6
 
-// Structure to hold decoded instruction fields
-typedef struct {
-    uint8_t opcode;      // 4-bit opcode
-    uint8_t r1;          // Register R1 number (6 bits)
-    uint8_t r2;          // Register R2 number (6 bits, R-Format only)
-    int16_t immediate;   // 6-bit immediate (I-Format, signed), aligned with parser
-    uint16_t pc;         // PC of this instruction
-    int is_r_format;     // 1 for R-Format, 0 for I-Format
-    uint16_t instruction; // 16-bit instruction
-} DecodedInstruction;
+extern queue if_id_queue; // Instruction Fetch to Decode stage
+extern queue id_ex_queue; // Decode to Execute stage
+
+// // Structure to hold decoded instruction fields
+// typedef struct {
+//     int is_r_format;     // 1 for R-Format, 0 for I-Format
+//     ID_EX id_ex;
+// } DecodedInstruction;
 
 // Function to check if instruction is R-Format
-int is_r_format(uint8_t opcode);
-
+int isit_r_format(uint8_t opcode);
 // Function to check if instruction needs sign extension for immediate
 int needs_sign_extension(uint8_t opcode);
 
 // Function to decode an instruction
-extern DecodedInstruction decode_stage(uint16_t instruction, uint16_t pc, int cycle);
+extern void decode_stage();
 
 #endif /* DECODER_H */
