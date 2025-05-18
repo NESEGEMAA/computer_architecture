@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include "decoder.h"
-#include "parser.h"
 
 // Function to check if instruction is R-Format
 int is_r_format(uint8_t opcode) {
@@ -80,36 +79,36 @@ DecodedInstruction decode_stage(uint16_t instruction, uint16_t pc, int cycle) {
 }
 
 // Main function for testing decode stage with CSEN.txt
-int main(int argc, char* argv[]) {
-    if (argc != 2) {
-        fprintf(stderr, "Usage: %s <assembly_file>\n", argv[0]);
-        return 1;
-    }
+// int main(int argc, char* argv[]) {
+//     if (argc != 2) {
+//         fprintf(stderr, "Usage: %s <assembly_file>\n", argv[0]);
+//         return 1;
+//     }
 
-    int instr_count = 0;
-    // Parse the CSEN.txt assembly file
-    Instruction* instructions = parse_assembly_file(argv[1], &instr_count);
+//     int instr_count = 0;
+//     // Parse the CSEN.txt assembly file
+//     Instruction* instructions = parse_assembly_file(argv[1], &instr_count);
 
-    if (instr_count == 0) {
-        printf("No instructions parsed from %s.\n", argv[1]);
-        free_instructions(instructions);
-        return 1;
-    }
+//     if (instr_count == 0) {
+//         printf("No instructions parsed from %s.\n", argv[1]);
+//         free_instructions(instructions);
+//         return 1;
+//     }
 
-    // Test decode stage for each parsed instruction
-    for (int i = 0; i < instr_count; i++) {
-        // Print the parsed instruction for reference
-        printf("\nParsed Instruction %d:\n", i + 1);
-        print_instruction(&instructions[i]);
+//     // Test decode stage for each parsed instruction
+//     for (int i = 0; i < instr_count; i++) {
+//         // Print the parsed instruction for reference
+//         printf("\nParsed Instruction %d:\n", i + 1);
+//         print_instruction(&instructions[i]);
 
-        // Decode the instruction (use index as PC, i+1 as cycle)
-        DecodedInstruction decoded = decode_stage(instructions[i].binary, i, i + 1);
-    }
+//         // Decode the instruction (use index as PC, i+1 as cycle)
+//         DecodedInstruction decoded = decode_stage(instructions[i].binary, i, i + 1);
+//     }
 
-    // Free the parsed instructions
-    free_instructions(instructions);
-    return 0;
-}
+//     // Free the parsed instructions
+//     free_instructions(instructions);
+//     return 0;
+// }
 
 //Expected Output:
 /*Cycle 1:
