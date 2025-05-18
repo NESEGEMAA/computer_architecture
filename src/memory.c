@@ -7,6 +7,9 @@ data_word_t register_file[REG_COUNT];        // Register file (R0-R63)
 data_word_t data_memory[DATA_MEMORY_SIZE];   // Data memory
 instruction_word_t instr_memory[INSTR_MEMORY_SIZE]; // Instruction memory
 
+IF_ID if_id = {0}; // Instruction Fetch to Decode stage
+ID_EX id_ex = {0}; // Decode to Execute stage
+
 // Function to initialize instruction memory
 void init_instr_memory() {
     for (uint16_t i = 0; i < INSTR_MEMORY_SIZE; i++) {

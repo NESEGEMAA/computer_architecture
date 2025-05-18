@@ -17,7 +17,7 @@ extern instruction_word_t instr_memory[INSTR_MEMORY_SIZE];
 // Pipelining intermittent variables
 typedef struct {
     instruction_word_t instr; // 16-bit instruction
-    instruction_word_t pc;   // PC at fetch time
+    uint16_t pc;   // PC at fetch time
 } IF_ID;
 
 typedef struct {
@@ -27,6 +27,9 @@ typedef struct {
     uint8_t r1, r2;          // Register indices
     int8_t imm;              // Immediate value (signed)
 } ID_EX;
+
+extern IF_ID if_id; // Instruction Fetch to Decode stage
+extern ID_EX id_ex; // Decode to Execute stage
 
 // Function declarations
 void init_memory();

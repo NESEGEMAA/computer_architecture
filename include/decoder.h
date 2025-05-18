@@ -2,6 +2,7 @@
 #define DECODER_H
 
 #include <stdint.h>
+#include "memory.h"
 #include "parser.h"
 
 // Define constants for Package 3
