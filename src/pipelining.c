@@ -4,10 +4,7 @@
 #include "instruction_map.h"
 #include <stdio.h>
 #include <stdbool.h>
-
-// Define global SREG and PC
-data_word_t SREG = 0;    // Status register (C, V, N, S, Z bits)
-uint16_t PC = 0;     // Program counter
+#include "../include/globals.h"
 
 // Global pipeline stages for the 3-stage pipeline (Instruction Fetch, Decode, Execute)
 // Each stage holds instruction data and state, defined by PipelineStage in pipelining.h

@@ -39,5 +39,8 @@ data_word_t read_data(uint16_t address);
 void write_data(uint16_t address, data_word_t value);
 data_word_t read_register(uint8_t reg_num);
 void write_register(uint8_t reg_num, data_word_t value);
+void print_instruction_memory(void);
+void print_data_memory(void);
+void print_registers(void);
 
 #endif // MEMORY_H

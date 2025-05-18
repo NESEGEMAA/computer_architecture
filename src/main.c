@@ -15,24 +15,14 @@ int main() {
     init_memory();
     
     // Load and parse assembly program directly into instruction memory
-uint16_t program_size = parse_and_load_assembly_file("CSEN.txt");
+    uint16_t program_size = parse_and_load_assembly_file("../src/CSEN.txt");
     printf("Successfully loaded %d instructions into memory\n", program_size);
     
-    // Print the instruction memory contents
+    // Print the instruction memory contents after parsing 
     printf("\nInstruction Memory Contents:\n");
     printf("-------------------------------------------\n");
-    for (uint16_t i = 0; i < program_size; i++) {
-        instruction_word_t instr = read_instruction(i);
-        printf("Address %03d: 0x%04X  ", i, instr);
-        
-        // Print binary representation
-        for (int j = 15; j >= 0; j--) {
-            printf("%d", (instr >> j) & 1);
-            if (j % 4 == 0 && j > 0) printf(" ");
-        }
-        printf("\n");
-    }
-    
+    print_instruction_memory();
+    printf("-------------------------------------------\n");
     // Print initial register states
     printf("\nInitial Register States:\n");
     printf("-------------------------------------------\n");
@@ -97,9 +87,7 @@ uint16_t program_size = parse_and_load_assembly_file("CSEN.txt");
     // Print data memory (showing stored values)
     printf("\nData Memory Contents:\n");
     printf("-------------------------------------------\n");
-    for (uint16_t addr = 96; addr < 104; addr++) {  // Showing addresses around 100
-        printf("MEM[%03d]: 0x%08X (%d)\n", addr, read_data(addr), read_data(addr));
-    }
+    print_data_memory();
     
     return 0;
 }

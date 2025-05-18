@@ -1,25 +1,19 @@
-
+#include "../include/globals.h"
 #include "../include/parser.h"
-#include <ctype.h>  // for isspace()
+#include <ctype.h> // for isspace()
+#include <stdio.h> // for printf
 
 // Helper function to get the opcode enum value from the mnemonic
 static Opcode get_opcode_from_mnemonic(const char *mnemonic)
 {
-    if (strcmp(mnemonic, "ADD") == 0) return ADD;
-    if (strcmp(mnemonic, "SUB") == 0) return SUB;
-    if (strcmp(mnemonic, "MUL") == 0) return MUL;
-    if (strcmp(mnemonic, "MOVI") == 0) return MOVI;
-    if (strcmp(mnemonic, "BEQZ") == 0) return BEQZ;
-    if (strcmp(mnemonic, "ANDI") == 0) return ANDI;
-    if (strcmp(mnemonic, "EOR") == 0) return EOR;
-    if (strcmp(mnemonic, "BR") == 0) return BR;
-    if (strcmp(mnemonic, "SAL") == 0) return SAL;
-    if (strcmp(mnemonic, "SAR") == 0) return SAR;
-    if (strcmp(mnemonic, "LDR") == 0) return LDR;
-    if (strcmp(mnemonic, "STR") == 0) return STR;
-
-    fprintf(stderr, "Unknown mnemonic: %s\n", mnemonic);
-    exit(EXIT_FAILURE);
+    Opcode opcode = get_instruction_enum(mnemonic);
+    
+    if (opcode == INVALID_INSTRUCTION) {
+        fprintf(stderr, "[PARSER] Unknown mnemonic: %s\n", mnemonic);
+        exit(EXIT_FAILURE);
+    }
+    fprintf(stderr, "[PARSER]   Opcode: %d\n", opcode);
+    return opcode;
 }
 
 // Helper function to get the instruction type from the opcode
@@ -42,7 +36,7 @@ static InstructionType get_instruction_type(Opcode opcode)
     case STR:
         return I_TYPE;
     default:
-        fprintf(stderr, "Unknown opcode: %d\n", opcode);
+        fprintf(stderr, "[PARSER] Unknown opcode: %d\n", opcode);
         exit(EXIT_FAILURE);
     }
 }
@@ -52,7 +46,7 @@ static uint8_t extract_register_number(const char *reg_str)
 {
     if (reg_str[0] != 'R')
     {
-        fprintf(stderr, "Invalid register format: %s\n", reg_str);
+        fprintf(stderr, "[PARSER] Invalid register format: %s\n", reg_str);
         exit(EXIT_FAILURE);
     }
     return (uint8_t)atoi(reg_str + 1);
@@ -69,7 +63,8 @@ static void clean_line(char *line)
 {
     // Remove comments (anything after ';')
     char *comment = strchr(line, ';');
-    if (comment) *comment = '\0';
+    if (comment)
+        *comment = '\0';
 
     // Remove trailing whitespace
     size_t len = strlen(line);
@@ -89,7 +84,7 @@ static uint16_t instruction_to_binary(const InstructionParser *instr)
         binary |= (instr->r2 & 0x3F);      // R2 (6 bits)
     }
     else
-    { // I_TYPE
+    {                                        // I_TYPE
         binary |= (instr->r1 & 0x3F) << 6;   // R1 (6 bits)
         binary |= (instr->immediate & 0xFF); // Immediate (8 bits)
     }
@@ -103,11 +98,13 @@ static InstructionParser parse_instruction_line(const char *line)
     char mnemonic[10];
     char operands[50];
 
+    printf("[PARSER]   Parsing line: \"%s\"\n", line); // Debug: show input line
+
     // Split line into mnemonic and operands
     char *space = strchr(line, ' ');
     if (!space)
     {
-        fprintf(stderr, "Invalid instruction format: %s\n", line);
+        fprintf(stderr, "[PARSER] Invalid instruction format: %s\n", line);
         exit(EXIT_FAILURE);
     }
 
@@ -118,6 +115,8 @@ static InstructionParser parse_instruction_line(const char *line)
 
     // Extract operands
     strcpy(operands, space + 1);
+
+    printf("[PARSER]   Mnemonic: %s, Operands: %s\n", mnemonic, operands); // Debug
 
     // Get the opcode and type
     instr.opcode = get_opcode_from_mnemonic(mnemonic);
@@ -132,7 +131,8 @@ static InstructionParser parse_instruction_line(const char *line)
         char *token = strtok(operands, ",");
         while (token && j < 3)
         {
-            while (*token == ' ') token++;
+            while (*token == ' ')
+                token++;
             operand_list[j++] = token;
             token = strtok(NULL, ",");
         }
@@ -149,28 +149,24 @@ static InstructionParser parse_instruction_line(const char *line)
 
     if (instr.type == R_TYPE)
     {
-        if (!operand_list[0] || !operand_list[1])
-        {
-            fprintf(stderr, "Invalid R-type instruction format: %s\n", line);
-            exit(EXIT_FAILURE);
-        }
         instr.r1 = extract_register_number(operand_list[0]);
         instr.r2 = extract_register_number(operand_list[1]);
         instr.immediate = 0;
+
+        printf("[PARSER]   Parsed R-type: R1 = R%d, R2 = R%d\n", instr.r1, instr.r2); // Debug
     }
     else
     {
-        if (!operand_list[0] || !operand_list[1])
-        {
-            fprintf(stderr, "Invalid I-type instruction format: %s\n", line);
-            exit(EXIT_FAILURE);
-        }
         instr.r1 = extract_register_number(operand_list[0]);
         instr.r2 = 0;
         instr.immediate = extract_immediate(operand_list[1]);
+
+        printf("[PARSER]   Parsed I-type: R1 = R%d, Immediate = %d\n", instr.r1, instr.immediate); // Debug
     }
 
     instr.binary = instruction_to_binary(&instr);
+    printf("[PARSER]   Binary: 0x%04X\n\n", instr.binary); // Debug: show binary representation
+
     return instr;
 }
 
@@ -179,7 +175,7 @@ uint16_t parse_and_load_assembly_file(const char *file_path)
     FILE *file = fopen(file_path, "r");
     if (!file)
     {
-        fprintf(stderr, "Failed to open file: %s\n", file_path);
+        fprintf(stderr, "[PARSER] Failed to open file: %s\n", file_path);
         exit(EXIT_FAILURE);
     }
 
@@ -187,41 +183,39 @@ uint16_t parse_and_load_assembly_file(const char *file_path)
     uint16_t address = 0;
     char line[256];
 
+    printf("[PARSER]   Loading assembly from: %s\n", file_path); // Debug
+
     while (fgets(line, sizeof(line), file) && address < INSTR_MEMORY_SIZE)
     {
         clean_line(line);
-        if (strlen(line) == 0) continue; // Skip empty lines
+        if (strlen(line) == 0)
+            continue; // Skip empty lines
 
         InstructionParser instr = parse_instruction_line(line);
         instr_memory[address++] = instr.binary;
-
-        // Optional debug print
-        // print_instruction(&instr);
     }
 
     fclose(file);
-    return address; // Return number of instructions loaded
+    printf("[PARSER] Finished loading %d instructions.\n", address); // Debug summary
+    return address;
 }
 
 void print_instruction(const InstructionParser *instr)
 {
     const char *type_str = (instr->type == R_TYPE) ? "R" : "I";
     const char *opcode_str[] = {
-        "ADD", "SUB", "MUL", "MOVI", "BEQZ", 
-        "ANDI", "EOR", "BR", "SAL", "SAR", "LDR", "STR"
-    };
-
-    printf("Opcode: %s (%d), Type: %s, ", 
+        "ADD", "SUB", "MUL", "MOVI", "BEQZ",
+        "ANDI", "EOR", "BR", "SAL", "SAR", "LDR", "STR"};
+    printf("[PARSER] Opcode: %s (%d), Type: %s, ",
            opcode_str[instr->opcode], instr->opcode, type_str);
-
     if (instr->type == R_TYPE)
     {
-        printf("R1: R%d, R2: R%d", instr->r1, instr->r2);
+        printf("[PARSER] R1: R%d, R2: R%d", instr->r1, instr->r2);
     }
     else
     {
-        printf("R1: R%d, Immediate: %d", instr->r1, instr->immediate);
+        printf("[PARSER] R1: R%d, Immediate: %d", instr->r1, instr->immediate);
     }
 
-    printf(", Binary: 0x%04X\n", instr->binary);
+    printf("[PARSER] , Binary: 0x%04X\n", instr->binary);
 }
