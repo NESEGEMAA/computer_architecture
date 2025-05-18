@@ -10,60 +10,49 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "../include/globals.h"
 
 // Define the instruction types
-typedef enum {
+typedef enum
+{
     R_TYPE, // Register type
     I_TYPE  // Immediate type
 } InstructionType;
 
 // Define opcodes for each instruction
-typedef enum {
-    ADD = 0,
-    SUB = 1,
-    MUL = 2,
-    MOVI = 3,
-    BEQZ = 4,
-    ANDI = 5,
-    EOR = 6,
-    BR = 7,
-    SAL = 8,
-    SAR = 9,
-    LDR = 10,
-    STR = 11
-} Opcode;
 
 // Structure to represent a parsed instruction
-typedef struct {
+typedef struct
+{
     Opcode opcode;
     InstructionType type;
     uint8_t r1;
     uint8_t r2;
     int16_t immediate;
     uint16_t binary; // The binary representation of the instruction
-} Instruction;
+} InstructionParser;
 
 /**
  * Parses the assembly file and returns an array of instructions
- * 
- * @param filename the name of the assembly file
+ *
+ * @param file_path the full path to the assembly file
  * @param instr_count pointer to store the number of instructions
  * @return array of instructions
  */
-Instruction* parse_assembly_file(const char* filename, int* instr_count);
+InstructionParser *parse_assembly_file(const char *file_path, int *instr_count);
 
 /**
  * Prints the parsed instruction in human-readable format
- * 
+ *
  * @param instr the instruction to print
  */
-void print_instruction(const Instruction* instr);
+void print_instruction(const InstructionParser *instr);
 
 /**
  * Frees the memory allocated for the instructions array
- * 
+ *
  * @param instructions the array of instructions to free
  */
-void free_instructions(Instruction* instructions);
+void free_instructions(InstructionParser *instructions);
 
 #endif /* PARSER_H */

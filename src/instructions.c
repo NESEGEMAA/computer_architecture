@@ -242,7 +242,7 @@ void _SAR(uint8_t rd, int8_t immediate)
 void _LDR(uint8_t rd, uint16_t address)
 {
     // Load to Register - load value from memory at address into register rd
-    int8_t value = read_memory(address);
+    int8_t value = read_data(address);
     write_register(rd, value);
 }
 
@@ -250,5 +250,5 @@ void _STR(uint8_t rd, uint16_t address)
 {
     // Store from Register - store value from register rd into memory at address
     int8_t value = read_register(rd);
-    write_memory(address, value);
+    write_data(address, value);
 }

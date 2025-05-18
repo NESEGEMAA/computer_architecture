@@ -5,9 +5,9 @@
 #include <stdlib.h> // For exit
 
 // Memory and Register File Declarations
-#define REG_COUNT 64              // 16 registers (R0-R63)
-#define DATA_MEMORY_SIZE 2048      // 2048 bytes of data memory
-#define INSTR_MEMORY_SIZE 1024     // 1024 instructions
+#define REG_COUNT 64           // 16 registers (R0-R63)
+#define DATA_MEMORY_SIZE 2048  // 2048 bytes of data memory
+#define INSTR_MEMORY_SIZE 1024 // 1024 instructions
 
 // Memory arrays
 extern data_word_t register_file[REG_COUNT];
