@@ -3,7 +3,7 @@
  * Implementation of the parser module for Package 3: Double Big Harvard combo large arithmetic shifts
  */
 
-#include "parser.h"
+#include "../include/parser.h"
 
 // Helper function to get the opcode enum value from the mnemonic
 Opcode get_opcode_from_mnemonic(const char* mnemonic) {
@@ -172,16 +172,29 @@ Instruction* parse_assembly_file(const char* filename, int* instr_count) {
         instructions[i].opcode = opcode;
         instructions[i].type = type;
         
-        // Tokenize operands
-        char* token = strtok(operands, ",");
+        // Parse operands based on format - first try commas as separators
         char* operand_list[3] = {NULL, NULL, NULL};
         int j = 0;
         
-        while (token && j < 3) {
-            // Remove leading/trailing spaces
-            while (*token == ' ') token++;
-            operand_list[j++] = token;
-            token = strtok(NULL, ",");
+        // First check if we have commas in the operands
+        if (strchr(operands, ',') != NULL) {
+            // Tokenize operands by commas
+            char* token = strtok(operands, ",");
+            
+            while (token && j < 3) {
+                // Remove leading/trailing spaces
+                while (*token == ' ') token++;
+                operand_list[j++] = token;
+                token = strtok(NULL, ",");
+            }
+        } else {
+            // If no commas, tokenize by spaces
+            char* token = strtok(operands, " \t");
+            
+            while (token && j < 3) {
+                operand_list[j++] = token;
+                token = strtok(NULL, " \t");
+            }
         }
         
         if (type == R_TYPE) {

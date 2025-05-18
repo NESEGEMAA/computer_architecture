@@ -37,7 +37,7 @@
  * Test program for the parser of Package 3: Double Big Harvard combo large arithmetic shifts
  */
 
-#include "parser.h"
+#include "../include/parser.h"
 
 int main(int argc, char* argv[]) {
     if (argc != 2) {
