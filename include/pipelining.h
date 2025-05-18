@@ -37,6 +37,8 @@ extern RegisterUpdate reg_updates[REG_COUNT];
 extern MemoryUpdate mem_updates[DATA_MEMORY_SIZE];
 extern bool sreg_updated;
 extern data_word_t sreg_new_value;
+extern data_word_t SREG;    // Status register
+extern uint16_t PC;     // Program counter
 
 // Pipeline control functions
 void init_pipeline(void);            // Initialize pipeline stages

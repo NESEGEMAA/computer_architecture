@@ -4,6 +4,7 @@
 #include "instruction_map.h"
 #include <stdio.h>
 #include <stdbool.h>
+#include "../include/globals.h"
 
 // Global pipeline stages for the 3-stage pipeline (Instruction Fetch, Decode, Execute)
 // Each stage holds instruction data and state, defined by PipelineStage in pipelining.h
@@ -33,7 +34,8 @@ void init_pipeline(void) {
         mem_updates[i].updated = false;
     }
     sreg_updated = false;// Clear SREG update flag
-    PC = 0;// Reset Program Counter (PC) to 0 (start of instruction memory)
+    PC = 0;
+    SREG = 0; // Explicitly initialize SREG
     init_memory();// Initialize memory arrays (registers, data memory, instruction memory) to 0
 
 }
