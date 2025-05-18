@@ -63,3 +63,19 @@ int main() {
     return 0;
 }
 
+//For testing pipelining:
+// #include "pipelining.h"
+// #include "parser.h"
+// #include <stdio.h>
+
+// int main() {
+//     int instr_count;
+//     InstructionParser *instructions = parse_assembly_file("test.asm", &instr_count);
+//     for (int i = 0; i < instr_count; i++) {
+//         instr_memory[i] = instructions[i].binary;
+//     }
+//     init_pipeline();
+//     run_pipeline();
+//     free_instructions(instructions);
+//     return 0;
+// }

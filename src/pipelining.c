@@ -5,6 +5,10 @@
 #include <stdio.h>
 #include <stdbool.h>
 
+// Define global SREG and PC
+data_word_t SREG = 0;    // Status register (C, V, N, S, Z bits)
+uint16_t PC = 0;     // Program counter
+
 // Global pipeline stages for the 3-stage pipeline (Instruction Fetch, Decode, Execute)
 // Each stage holds instruction data and state, defined by PipelineStage in pipelining.h
 PipelineStage fetch_stage = {0};   // Fetch stage: Retrieves instruction from memory
@@ -33,7 +37,8 @@ void init_pipeline(void) {
         mem_updates[i].updated = false;
     }
     sreg_updated = false;// Clear SREG update flag
-    PC = 0;// Reset Program Counter (PC) to 0 (start of instruction memory)
+    PC = 0;
+    SREG = 0; // Explicitly initialize SREG
     init_memory();// Initialize memory arrays (registers, data memory, instruction memory) to 0
 
 }
