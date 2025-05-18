@@ -7,8 +7,9 @@
 static Opcode get_opcode_from_mnemonic(const char *mnemonic)
 {
     Opcode opcode = get_instruction_enum(mnemonic);
-    
-    if (opcode == INVALID_INSTRUCTION) {
+
+    if (opcode == INVALID_INSTRUCTION)
+    {
         fprintf(stderr, "[PARSER] Unknown mnemonic: %s\n", mnemonic);
         exit(EXIT_FAILURE);
     }
@@ -16,38 +17,20 @@ static Opcode get_opcode_from_mnemonic(const char *mnemonic)
     return opcode;
 }
 
-// Helper function to get the instruction type from the opcode
-static InstructionType get_instruction_type(Opcode opcode)
-{
-    switch (opcode)
-    {
-    case ADD:
-    case SUB:
-    case MUL:
-    case EOR:
-    case BR:
-        return R_TYPE;
-    case MOVI:
-    case BEQZ:
-    case ANDI:
-    case SAL:
-    case SAR:
-    case LDR:
-    case STR:
-        return I_TYPE;
-    default:
-        fprintf(stderr, "[PARSER] Unknown opcode: %d\n", opcode);
-        exit(EXIT_FAILURE);
-    }
-}
-
-// Helper function to extract register number from a string like "R12"
-static uint8_t extract_register_number(const char *reg_str)
+// Helper function to extract register number from a string like "R12" or an immediate value (6-bit)
+static uint8_t extract_register_number_or_immediate(const char *reg_str)
 {
     if (reg_str[0] != 'R')
     {
-        fprintf(stderr, "[PARSER] Invalid register format: %s\n", reg_str);
-        exit(EXIT_FAILURE);
+        // If not "R", treat as immediate (6-bit)
+        int16_t value = atoi(reg_str);
+        // Ensure the value fits in 6 bits (0-63)
+        if (value < 0 || value > 63)
+        {
+            fprintf(stderr, "[PARSER] Error: Immediate value %d out of range (0-63) for 6-bit field\n", value);
+            return value & 0x3F; // Return truncated value (6 bits only)
+        }
+        return (uint8_t)(value & 0x3F); // Ensure only 6 bits are used
     }
     return (uint8_t)atoi(reg_str + 1);
 }
@@ -55,7 +38,13 @@ static uint8_t extract_register_number(const char *reg_str)
 // Helper function to extract immediate value from a string
 static int16_t extract_immediate(const char *imm_str)
 {
-    return (int16_t)atoi(imm_str);
+    int16_t value = (int16_t)atoi(imm_str);
+    // We're keeping this as a 16-bit value, but displaying a warning if it exceeds 6-bit range
+    if (value < 0 || value > 63)
+    {
+        fprintf(stderr, "[PARSER] Warning: Immediate value %d exceeds 6-bit range (0-63)\n", value);
+    }
+    return value;
 }
 
 // Helper function to clean a string by removing leading/trailing spaces and comments
@@ -78,16 +67,8 @@ static uint16_t instruction_to_binary(const InstructionParser *instr)
     uint16_t binary = 0;
     binary |= (instr->opcode & 0xF) << 12; // Opcode (4 bits)
 
-    if (instr->type == R_TYPE)
-    {
-        binary |= (instr->r1 & 0x3F) << 6; // R1 (6 bits)
-        binary |= (instr->r2 & 0x3F);      // R2 (6 bits)
-    }
-    else
-    {                                        // I_TYPE
-        binary |= (instr->r1 & 0x3F) << 6;   // R1 (6 bits)
-        binary |= (instr->immediate & 0xFF); // Immediate (8 bits)
-    }
+    binary |= (instr->r1 & 0x3F) << 6; // R1 (6 bits)
+    binary |= (instr->r2 & 0x3F);      // R2 (6 bits)
     return binary;
 }
 
@@ -120,16 +101,15 @@ static InstructionParser parse_instruction_line(const char *line)
 
     // Get the opcode and type
     instr.opcode = get_opcode_from_mnemonic(mnemonic);
-    instr.type = get_instruction_type(instr.opcode);
 
     // Parse operands
-    char *operand_list[3] = {NULL, NULL, NULL};
+    char *operand_list[2] = {NULL, NULL};
     int j = 0;
 
     if (strchr(operands, ',') != NULL)
     {
         char *token = strtok(operands, ",");
-        while (token && j < 3)
+        while (token && j < 2)
         {
             while (*token == ' ')
                 token++;
@@ -140,29 +120,16 @@ static InstructionParser parse_instruction_line(const char *line)
     else
     {
         char *token = strtok(operands, " \t");
-        while (token && j < 3)
+        while (token && j < 2)
         {
             operand_list[j++] = token;
             token = strtok(NULL, " \t");
         }
     }
+    instr.r1 = extract_register_number_or_immediate(operand_list[0]);
+    instr.r2 = extract_register_number_or_immediate(operand_list[1]);
 
-    if (instr.type == R_TYPE)
-    {
-        instr.r1 = extract_register_number(operand_list[0]);
-        instr.r2 = extract_register_number(operand_list[1]);
-        instr.immediate = 0;
-
-        printf("[PARSER]   Parsed R-type: R1 = R%d, R2 = R%d\n", instr.r1, instr.r2); // Debug
-    }
-    else
-    {
-        instr.r1 = extract_register_number(operand_list[0]);
-        instr.r2 = 0;
-        instr.immediate = extract_immediate(operand_list[1]);
-
-        printf("[PARSER]   Parsed I-type: R1 = R%d, Immediate = %d\n", instr.r1, instr.immediate); // Debug
-    }
+    printf("[PARSER]   Parsed : operand 1 = %d, operand 2 = %d\n", instr.r1, instr.r2);
 
     instr.binary = instruction_to_binary(&instr);
     printf("[PARSER]   Binary: 0x%04X\n\n", instr.binary); // Debug: show binary representation
