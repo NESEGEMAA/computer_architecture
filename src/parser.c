@@ -7,8 +7,9 @@
 static Opcode get_opcode_from_mnemonic(const char *mnemonic)
 {
     Opcode opcode = get_instruction_enum(mnemonic);
-    
-    if (opcode == INVALID_INSTRUCTION) {
+
+    if (opcode == INVALID_INSTRUCTION)
+    {
         fprintf(stderr, "[PARSER] Unknown mnemonic: %s\n", mnemonic);
         exit(EXIT_FAILURE);
     }
@@ -42,12 +43,19 @@ static Opcode get_opcode_from_mnemonic(const char *mnemonic)
 // }
 
 // Helper function to extract register number from a string like "R12"
-static uint8_t extract_register_number(const char *reg_str)
+static uint8_t extract_register_number_or_immediate(const char *reg_str)
 {
     if (reg_str[0] != 'R')
     {
-        fprintf(stderr, "[PARSER] Invalid register format: %s\n", reg_str);
-        exit(EXIT_FAILURE);
+        // If not "R", treat as immediate (6-bit)
+        int16_t value = atoi(reg_str);
+        // Ensure the value fits in 6 bits (0-63)
+        if (value < 0 || value > 63)
+        {
+            fprintf(stderr, "[PARSER] Error: Immediate value %d out of range (0-63) for 6-bit field\n", value);
+            return value & 0x3F; // Return truncated value (6 bits only)
+        }
+        return (uint8_t)(value & 0x3F); // Ensure only 6 bits are used
     }
     return (uint8_t)atoi(reg_str + 1);
 }
@@ -55,7 +63,13 @@ static uint8_t extract_register_number(const char *reg_str)
 // Helper function to extract immediate value from a string
 static int16_t extract_immediate(const char *imm_str)
 {
-    return (int16_t)atoi(imm_str);
+    int16_t value = (int16_t)atoi(imm_str);
+    // We're keeping this as a 16-bit value, but displaying a warning if it exceeds 6-bit range
+    if (value < 0 || value > 63)
+    {
+        fprintf(stderr, "[PARSER] Warning: Immediate value %d exceeds 6-bit range (0-63)\n", value);
+    }
+    return value;
 }
 
 // Helper function to clean a string by removing leading/trailing spaces and comments
@@ -76,7 +90,7 @@ static void clean_line(char *line)
 static uint16_t instruction_to_binary(const InstructionParser *instr)
 {
     uint16_t binary = 0;
-    binary |= (instr->opcode & 0xF) << 12; // Opcode (4 bits)
+    binary |= (instr->opcode & 0xF) << 12;    // Opcode (4 bits)
     binary |= (instr->operand_1 & 0x3F) << 6; // R1 (6 bits)
     binary |= (instr->operand_2 & 0x3F);      // R2 (6 bits) or immediate (6 bits)
 
@@ -140,8 +154,8 @@ static instruction_word_t parse_instruction_line(const char *line)
 
     // if (instr.type == R_TYPE)
     // {
-        instr.operand_1 = extract_register_number(operand_list[0]);
-        instr.operand_2 = extract_register_number(operand_list[1]);
+    instr.operand_1 = extract_register_number_or_immediate(operand_list[0]);
+    instr.operand_2 = extract_register_number_or_immediate(operand_list[1]);
     //     instr.immediate = 0;
 
     //     printf("[PARSER]   Parsed R-type: R1 = R%d, R2 = R%d\n", instr.r1, instr.r2); // Debug
