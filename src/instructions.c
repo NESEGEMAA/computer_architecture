@@ -119,18 +119,18 @@ void _ADD()
     data_word_t destination = id_ex.r1_value;
     data_word_t source = id_ex.r2_value;
 
+    printf("ADD: data_hazard=%d, data_stall=%d, r1_forward=%d, r2_forward=%d\n", 
+           id_ex.data_hazard, id_ex.data_stall, id_ex.r1_forward, id_ex.r2_forward);
+
     // Data hazard forwarding for source operand
-    if (data_hazard == 1 && data_stall == 0) {
-        if(EX.r2==1)
+    if (id_ex.data_hazard==1 && id_ex.data_stall==0) {
+        if(id_ex.r2_forward==1)
         source = EX.result;
-        if(EX.r1==1)
+        if(id_ex.r1_forward==1)
         destination = EX.result;
         printf("Data hazard detected in ADD instruction. Forwarding value: %d...\n", source);
-        data_hazard = 0;
-        data_stall = 1;
+        id_ex.data_hazard=0;
     }
-    printf("  Input Values to execute stage: ");
-    printf("R%d = %d, R%d = %d\n", id_ex.r1, destination, id_ex.r2, source);
 
     int16_t result = destination + source;
     EX.result = result;
@@ -150,19 +150,19 @@ void _SUB()
     data_word_t destination = id_ex.r1_value;
     data_word_t source = id_ex.r2_value;
 
+    printf("SUB: data_hazard=%d, data_stall=%d, r1_forward=%d, r2_forward=%d\n", 
+           id_ex.data_hazard, id_ex.data_stall, id_ex.r1_forward, id_ex.r2_forward);
+
     // Data hazard forwarding
-    if (data_hazard == 1 && data_stall == 0) {
-        if(EX.r1==1)
+    if (id_ex.data_hazard==1 && id_ex.data_stall==0) {
+        if(id_ex.r1_forward==1)
             destination = EX.result;
-        if(EX.r2==1) 
+        if(id_ex.r2_forward==1) 
             source = EX.result;
         printf("Data hazard detected in SUB instruction. Forwarding value: %d...\n", 
-               (EX.r1==1) ? destination : source);
-        data_hazard = 0;
-        data_stall = 1;
+               (id_ex.r1_forward==1) ? destination : source);
+        id_ex.data_hazard=0;
     }
-    printf("  Input Values to execute stage: ");
-    printf("R%d = %d, R%d = %d\n", id_ex.r1, destination, id_ex.r2, source);
 
     int16_t result = destination - source;
     EX.result = result;
@@ -181,19 +181,19 @@ void _MUL()
     data_word_t destination = id_ex.r1_value;
     data_word_t source = id_ex.r2_value;
 
+    printf("MUL: data_hazard=%d, data_stall=%d, r1_forward=%d, r2_forward=%d\n", 
+           id_ex.data_hazard, id_ex.data_stall, id_ex.r1_forward, id_ex.r2_forward);
+
     // Data hazard forwarding
-    if (data_hazard == 1 && data_stall == 0) {
-        if(EX.r1==1)
+    if (id_ex.data_hazard==1 && id_ex.data_stall==0) {
+        if(id_ex.r1_forward==1)
             destination = EX.result;
-        if(EX.r2==1) 
+        if(id_ex.r2_forward==1) 
             source = EX.result;
         printf("Data hazard detected in MUL instruction. Forwarding value: %d...\n", 
-               (EX.r1==1) ? destination : source);
-        data_hazard = 0;
-        data_stall = 1;
+               (id_ex.r1_forward==1) ? destination : source);
+        id_ex.data_hazard=0;
     }
-    printf("  Input Values to execute stage: ");
-    printf("R%d = %d, R%d = %d\n", id_ex.r1, destination, id_ex.r2, source);
 
     int16_t result = destination * source;
     EX.result = result;
@@ -208,14 +208,14 @@ void _MUL()
 
 void _MOVI()
 {
-
     ID_EX id_ex = *(peek_id_ex(&id_ex_queue)); // Decode to Execute stage
     uint8_t rd = id_ex.r1;
     int8_t immediate = id_ex.immediate;
-    EX.result = immediate;
     
-    printf("  Input Values to execute stage: ");
-    printf("R%d = %d, Immediate = %d\n", id_ex.r1, id_ex.r1_value, id_ex.immediate);
+    printf("MOVI: data_hazard=%d, data_stall=%d, r1_forward=%d, r2_forward=%d\n", 
+           id_ex.data_hazard, id_ex.data_stall, id_ex.r1_forward, id_ex.r2_forward);
+    
+    EX.result = immediate;
 
     // Move immediate value to register rd
     write_register(rd, immediate);
@@ -229,20 +229,20 @@ void _BEQZ()
     int8_t value = id_ex.r1_value;
     int8_t immediate = id_ex.immediate;
     
+    printf("BEQZ: data_hazard=%d, data_stall=%d, r1_forward=%d, r2_forward=%d\n", 
+           id_ex.data_hazard, id_ex.data_stall, id_ex.r1_forward, id_ex.r2_forward);
+    
     // Add data hazard forwarding for r1
-    if (data_hazard == 1 && data_stall == 0) {
-        if(EX.r1==1) {
+    if (id_ex.data_hazard==1 && id_ex.data_stall==0) {
+        if(id_ex.r1_forward==1) {
             value = EX.result;
             printf("Data hazard detected in BEQZ instruction. Forwarding value: %d...\n", value);
         }
-        data_hazard = 0;
-        data_stall = 1;
+        id_ex.data_hazard=0;
     }
-
-    printf("  Input Values to execute stage: ");
-    printf("R%d = %d, Immediate = %d\n", id_ex.r1, value, immediate);
+    
     EX.result = immediate;
-
+    
     if (value == 0)
     {
         while (!isEmpty(&if_id_queue))
@@ -259,7 +259,7 @@ void _BEQZ()
         execute_stall = 2;
         PC = id_ex.pc + immediate;
     }
-    data_hazard = 0;
+    id_ex.data_hazard=0;
 
     printf("BEQZ: R%u = %d, PC = %d\n", id_ex.r1, value, PC);
 }
@@ -270,18 +270,18 @@ void _ANDI()
     int8_t destination = id_ex.r1_value;
     int8_t immediate = id_ex.immediate;
 
+    printf("ANDI: data_hazard=%d, data_stall=%d, r1_forward=%d, r2_forward=%d\n", 
+           id_ex.data_hazard, id_ex.data_stall, id_ex.r1_forward, id_ex.r2_forward);
+
     // Data hazard forwarding - only check r1
-    if (data_hazard == 1 && data_stall == 0) {
-        if(EX.r1==1) {
+    if (id_ex.data_hazard==1 && id_ex.data_stall==0) {
+        if(id_ex.r1_forward==1) {
             destination = EX.result;
             printf("Data hazard detected in ANDI instruction. Forwarding value: %d...\n", destination);
         }
-        data_hazard = 0;
-        data_stall = 1;
+        id_ex.data_hazard=0;
     }
 
-    printf("  Input Values to execute stage: ");
-    printf("R%d = %d, Immediate = %d\n", id_ex.r1, destination, immediate);
     int8_t result = destination & immediate;
     EX.result = result;
 
@@ -300,20 +300,20 @@ void _EOR()
     int8_t destination = id_ex.r1_value;
     int8_t source = id_ex.r2_value;
 
+    printf("EOR: data_hazard=%d, data_stall=%d, r1_forward=%d, r2_forward=%d\n", 
+           id_ex.data_hazard, id_ex.data_stall, id_ex.r1_forward, id_ex.r2_forward);
+
     // Data hazard forwarding
-    if (data_hazard == 1 && data_stall == 0) {
-        if(EX.r1==1)
+    if (id_ex.data_hazard==1 && id_ex.data_stall==0) {
+        if(id_ex.r1_forward==1)
             destination = EX.result;
-        if(EX.r2==1) 
+        if(id_ex.r2_forward==1) 
             source = EX.result;
         printf("Data hazard detected in EOR instruction. Forwarding value: %d...\n", 
-               (EX.r1==id_ex.r1) ? destination : source);
-        data_hazard = 0;
-        data_stall = 1;
+               (id_ex.r1_forward==1) ? destination : source);
+        id_ex.data_hazard=0;
     }
 
-    printf("  Input Values to execute stage: ");
-    printf("R%d = %d, R%d = %d\n", id_ex.r1, destination, id_ex.r2, source);
     int8_t result = destination ^ source;
     EX.result = result;
 
@@ -332,23 +332,24 @@ void _BR()
     int8_t high_byte = id_ex.r1_value;
     int8_t low_byte = id_ex.r2_value;
 
+    printf("BR: data_hazard=%d, data_stall=%d, r1_forward=%d, r2_forward=%d\n", 
+           id_ex.data_hazard, id_ex.data_stall, id_ex.r1_forward, id_ex.r2_forward);
+
     // Data hazard forwarding for both registers
-    if (data_hazard == 1 && data_stall == 0) {
+    if (id_ex.data_hazard==1 && id_ex.data_stall==0) {
         // Check if r1 (high byte) needs forwarding
-        if(EX.r1==1) {
+        if(id_ex.r1_forward==1) {
             high_byte = EX.result;
             printf("Data hazard detected in BR instruction. Forwarding high_byte: %d...\n", high_byte);
         }
         // Check if r2 (low byte) needs forwarding
-        if(EX.r2==1) {
+        if(id_ex.r2_forward==1) {
             low_byte = EX.result;
             printf("Data hazard detected in BR instruction. Forwarding low_byte: %d...\n", low_byte);
         }
-        data_hazard = 0;
-        data_stall = 1;
+        id_ex.data_hazard=0;
     }
-    printf("  Input Values to execute stage: ");
-    printf("R%d = %d, R%d = %d\n", id_ex.r1, high_byte, id_ex.r2, low_byte);
+
     // Concatenate the two registers to form a 16-bit address
     uint16_t new_pc = ((uint16_t)(uint8_t)high_byte << 8) | (uint8_t)low_byte;
     EX.result = new_pc;
@@ -361,7 +362,7 @@ void _BR()
         dequeue_id_ex(&id_ex_queue);
     }
    
-    data_hazard = 0;
+    id_ex.data_hazard=0;
     decode_stall = 1;
     execute_stall = 2;
     printf("Flushing out previous instructions in the fetch and decode stages...\n");
@@ -377,17 +378,18 @@ void _SAL()
     int8_t destination = id_ex.r1_value;
     int8_t immediate = id_ex.immediate;
 
+    printf("SAL: data_hazard=%d, data_stall=%d, r1_forward=%d, r2_forward=%d\n", 
+           id_ex.data_hazard, id_ex.data_stall, id_ex.r1_forward, id_ex.r2_forward);
+
     // Data hazard forwarding - only check r1
-    if (data_hazard == 1 && data_stall == 0) {
-        if(EX.r1==1) {
+    if (id_ex.data_hazard==1 && id_ex.data_stall==0) {
+        if(id_ex.r1_forward==1) {
             destination = EX.result;
             printf("Data hazard detected in SAL instruction. Forwarding value: %d...\n", destination);
         }
-        data_hazard = 0;
-        data_stall = 1;
+        id_ex.data_hazard=0;
     }
-    printf("  Input Values to execute stage: ");
-    printf("R%d = %d, Immediate = %d\n", id_ex.r1, destination, immediate);
+
     int16_t result = destination << immediate;
     EX.result = result;
 
@@ -406,17 +408,17 @@ void _SAR()
     int8_t destination = id_ex.r1_value;
     int8_t immediate = id_ex.immediate;
 
+    printf("SAR: data_hazard=%d, data_stall=%d, r1_forward=%d, r2_forward=%d\n", 
+           id_ex.data_hazard, id_ex.data_stall, id_ex.r1_forward, id_ex.r2_forward);
+
     // Data hazard forwarding - only check r1
-    if (data_hazard == 1 && data_stall == 0) {
-        if(EX.r1==1) {
+    if (id_ex.data_hazard==1 && id_ex.data_stall==0) {
+        if(id_ex.r1_forward==1) {
             destination = EX.result;
             printf("Data hazard detected in SAR instruction. Forwarding value: %d...\n", destination);
         }
-        data_hazard = 0;
-        data_stall = 1;
+        id_ex.data_hazard=0;
     }
-    printf("  Input Values to execute stage: ");
-    printf("R%d = %d, Immediate = %d\n", id_ex.r1, destination, immediate);
 
     int16_t result = destination >> immediate;
     EX.result = result;
@@ -434,23 +436,25 @@ void _LDR()
 { 
    
     ID_EX id_ex = *(peek_id_ex(&id_ex_queue)); // Decode to Execute stage
-    uint8_t address;
+    uint8_t address = id_ex.immediate;  // Initialize address
     int8_t value;
-    uint8_t rd ;
-    if (data_hazard == 1&&data_stall==0)
+    uint8_t rd = id_ex.r1;
+
+    printf("LDR: data_hazard=%d, data_stall=%d, r1_forward=%d, r2_forward=%d\n", 
+           id_ex.data_hazard, id_ex.data_stall, id_ex.r1_forward, id_ex.r2_forward);
+
+    if (id_ex.data_hazard==1 && id_ex.data_stall==0)
         {
             value = EX.result;
             printf("Data hazard detected in LDR instruction. Forwarding Memory Data : %d...\n",value);
-            data_hazard = 0;
-            data_stall = 1;
+            id_ex.data_hazard=0;
+
         }
     else{
     // Load to Register - load value from memory at address into register rd
     address = id_ex.immediate;
     value = read_data(address);
     }
-    printf("  Input Values to execute stage: ");
-    printf("R%d = %d, Immediate = %d\n", id_ex.r1, value, address);
     rd = id_ex.r1;
     
     // Store old register value for comparison
@@ -472,21 +476,23 @@ void _STR()
     uint8_t rd ;
     int8_t value ;
     int8_t address ;
-    if (data_hazard==1&&data_stall==0){
+    
+    printf("STR: data_hazard=%d, data_stall=%d, r1_forward=%d, r2_forward=%d\n", 
+           id_ex.data_hazard, id_ex.data_stall, id_ex.r1_forward, id_ex.r2_forward);
+    
+    if (id_ex.data_hazard==1 && id_ex.data_stall==0) {
         value = EX.result;
         printf("Data hazard detected in STR instruction. Forwarding Register Value : %d...\n",value);
-        data_hazard = 0;
-        data_stall = 1;
+        id_ex.data_hazard=0;
     }
     
     // Store from Register - store value from register rd into memory at address
    else
-    value = id_ex.r1_value;
+     value = id_ex.r1_value;
+    
     rd = id_ex.r1;
     address = id_ex.immediate;
-    printf("  Input Values to execute stage: ");
-    printf("R%d = %d, Immediate = %d\n", id_ex.r1, value, address);
-
+    
     // Store old memory value for comparison
     int8_t old_value = read_data(address);
     EX.result = value;

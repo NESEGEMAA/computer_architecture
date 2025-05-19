@@ -127,12 +127,13 @@ void execute_stage()
     //     printf("sys_call=%d\n",sys_call);
     //     return;
     // }
+    //  if (id_ex.data_hazard == 1 && id_ex.data_stall == 1)
+    //     {
+    //         id_ex.data_stall = 0;
+    //     }
         if (!isEmpty(&id_ex_queue))
         dequeue_id_ex(&id_ex_queue);
-        if (data_hazard == 1 && data_stall == 1)
-        {
-            data_stall = 0;
-        }
+       
     } 
 
 void opcode_func(Opcode opcode)

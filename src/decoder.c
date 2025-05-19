@@ -111,22 +111,23 @@ void decode_stage()
         if (executing.opcode!=BEQZ && executing.opcode!=BR){
             // Check for data hazards
             if ( id_ex.opcode==LDR && executing.opcode==STR&&id_ex.immediate==executing.immediate){
-                  data_hazard = 1;
-                  data_stall=1;
+                  id_ex.data_hazard = 1;
+                  id_ex.data_stall=0;
+                
             }
             else if (id_ex.r1==executing.r1 && (id_ex.opcode!=LDR && id_ex.opcode!=MOVI)){
-                data_hazard = 1;
-                EX.r1=1;
-                 data_stall=1;
+                 id_ex.data_hazard = 1;
+                 id_ex.r1_forward=1;
+                 id_ex.data_stall=0;
             }
             else if (id_ex.r2==executing.r1){
-                data_hazard = 1;
-                EX.r2=1;
-                data_stall=1;
+                id_ex.data_hazard = 1;
+                id_ex.r2_forward=1;
+                id_ex.data_stall=0;
             }
         }
        }
-       printf("Data hazard:%d:, Data stall: %d...\n", data_hazard, data_stall);
+       printf("Data hazard:%d:, Data stall: %d...\n", id_ex.data_hazard, id_ex.data_stall);
         // Enqueue to Decode to Execute stage
         enqueue_id_ex(&id_ex_queue, &id_ex);
         // if (!isEmpty(&id_ex_queue)){
