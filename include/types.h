@@ -1,4 +1,4 @@
-// types.h
+// types.h - Updated version
 #ifndef TYPES_H
 #define TYPES_H
 
@@ -12,6 +12,7 @@ typedef uint16_t instruction_word_t; // 16-bit instruction word
 // Forward declarations for recursive pointers
 typedef struct IF_ID IF_ID;
 typedef struct ID_EX ID_EX;
+typedef struct EXEC EXEC; // Changed from EX to EXEC as the type name
 
 struct IF_ID {
     instruction_word_t instr;
@@ -27,6 +28,12 @@ struct ID_EX {
     data_word_t r1_value, r2_value;
     int8_t immediate;
     ID_EX *next;
+};
+
+struct EXEC {
+    data_word_t result;
+    int r1;
+    int r2;
 };
 
 #endif // TYPES_H

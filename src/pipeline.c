@@ -1,6 +1,13 @@
 #include "pipeline.h"
 
 int cycle = 0; // Cycle counter
+int decode_stall = 0;
+int execute_stall = 0;
+int stop = 0;  // Stop flag
+int data_hazard=0;
+int data_stall=0;
+struct EXEC EX = {0}; // Definition of the global EX variable
+
 
 void fetch_stage();
 void execute_stage();
@@ -11,14 +18,28 @@ void pipeline_cycle()
     printf("\nCycle %d\n", cycle);
     fetch_stage();
 
-    if (PC > 1)
-    {
-            decode_stage(); // since fetch increments PC by 1 so decode should be skipped for first cycle
+    if (decode_stall > 0) {
+        printf("Stalling decode stage (%d cycles left)\n", decode_stall);
+        decode_stall--;
+    } else if (PC > 1) {
+            if (stop >=2){
+            printf("Decode Stage: Stopped\n");
+            }
+            else
+              decode_stage();
     }
 
-    if (PC > 2)
-    {
-        execute_stage();
+    if (execute_stall > 0) {
+        printf("Stalling execute stage (%d cycles left)\n", execute_stall);
+        execute_stall--;
+    } else if (PC > 2) {
+         if (stop>= 3){
+            printf("Execute Stage: Stopped\n");
+            sys_call=0;
+            return;
+    }
+        else
+           execute_stage();
     }
 
     cycle++;
@@ -26,12 +47,6 @@ void pipeline_cycle()
 
 void fetch_stage()
 {
-     if (isEmpty(&id_ex_queue))
-    { 
-        printf("Execute Stage: Stopped.\n");
-    }
-    IF_ID if_id = {0}; // Instruction Fetch to Decode stage
-
     // Store the PC value at the start of fetch
     instruction_word_t fetch_pc = PC;
     
@@ -39,12 +54,13 @@ void fetch_stage()
     instruction_word_t instruction = read_instruction(PC);
     if (instruction == UNDEFINED_INT16)
     {
+        stop++;
         printf("Fetch Stage: Stopped\n");
         return;
     }
 
     printf("Fetch Stage: PC: %d, Instruction: 0x%04X\n", PC, instruction);
-
+    IF_ID if_id = {0}; // Instruction Fetch to Decode stage
     if_id.instr = instruction;
     if_id.pc = ++PC;
 
@@ -59,8 +75,9 @@ void fetch_stage()
 
 void execute_stage()
 {
-    ID_EX id_ex = *(peek_id_ex(&id_ex_queue)); // Decode to Execute stage
     
+    ID_EX id_ex = *(peek_id_ex(&id_ex_queue)); // Decode to Execute stage
+
     // Print the instruction entering the execute stage
     printf("Execute Stage: Instruction: 0x%04X, Opcode: %s, PC: %d\n", 
            id_ex.instruction, 
@@ -69,7 +86,7 @@ void execute_stage()
 
     // Print the values entering the stage
     printf("  Input Values: ");
-    if (isit_r_format(id_ex.opcode)) {
+    if (isit_r_format(id_ex.opcode)) {//CHECK IF ITS RIGHT BECAUSE WE DO NOT ALWAYS USE ID_EX Maybe a data hazard occured
         printf("R%d = %d, R%d = %d\n", id_ex.r1, id_ex.r1_value, id_ex.r2, id_ex.r2_value);
     } else {
         printf("R%d = %d, Immediate = %d\n", id_ex.r1, id_ex.r1_value, id_ex.immediate);
@@ -111,14 +128,20 @@ void execute_stage()
     }
 
     // Dequeue from Decode to Execute stage
-    dequeue_id_ex(&id_ex_queue);
-     if (isEmpty(&id_ex_queue))
-    { 
-        printf("Execute Stage: Stopped.\n");
-        sys_call = 0; // Stop execution if queue is empty
-        printf("sys_call=%d\n",sys_call);
-        return;
+    //  if (isEmpty(&id_ex_queue))
+    // { 
+    //     printf("Execute Stage: Stopped.\n");
+    //     sys_call = 0; // Stop execution if queue is empty
+    //     printf("sys_call=%d\n",sys_call);
+    //     return;
+    // }
+    dequeue_id_ex(&id_ex_queue); 
+    if (data_hazard==1&&data_stall==1){
+        data_stall=0;
     }
+ 
+    
+    
 }
 
 void opcode_func(Opcode opcode)
