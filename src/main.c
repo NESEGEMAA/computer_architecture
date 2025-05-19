@@ -43,10 +43,8 @@ int main()
     PC = 0; // Reset program counter
     while (sys_call == 1) // Continue until all instructions are executed
     {
-        printf("syscallb=%d\n",sys_call);
         // Execute one cycle of the pipeline
         pipeline_cycle();
-        printf("syscalla=%d\n",sys_call);
     }
 
     // Print final simulation results

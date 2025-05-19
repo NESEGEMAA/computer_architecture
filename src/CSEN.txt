@@ -1,8 +1,11 @@
-MOVI R1 10     ; R1 = 10
-MOVI R2 12     ; R2 = 12
-EOR R1 R2      ; R1 ^ R2 (10 ^ 12 = 6)
-ADD R4 R3      ; R4 = R4 + R3 (0 + 6 = 6)
-SUB R5 R1      ; R5 = R5 - R1 (0 - 10 = -10)
-STR R3 100     ; MEM[100] = R3 (6)
-LDR R6 100     ; R6 = MEM[100] (6)
-BEQZ R6 2      ; If R6 == 0, branch to PC + 1 + 2 (skip, since R6 = 6)
+MOVI R1 0
+MOVI R6 4
+BR R1 R6         ; Branch to 04 which is 4       new pc =  2 + 1 + 4 = 7
+MOVI R20 20        ; Skipped
+MOVI R20 20        ; Skipped
+MOVI R20 20        ; Skipped
+MOVI R20 20        ; Skipped
+MOVI R5 31        
+ANDI R5 0         ; Edge: R5 = 0
+MOVI R4 28
+ANDI R4 18        ; R4 = 16

@@ -106,10 +106,32 @@ void decode_stage()
 
         // Dequeue from IF to ID stage (do this after processing the instruction)
         dequeue_if_id(&if_id_queue);
-
+        if(!isEmpty(&id_ex_queue)){
+        ID_EX executing = *(peek_id_ex(&id_ex_queue)); // Decode to Execute stage
+        if (executing.opcode!=BEQZ && executing.opcode!=BR){
+            // Check for data hazards
+            if ( id_ex.opcode==LDR && executing.opcode==STR&&id_ex.immediate==executing.immediate){
+                 data_hazard = 1;
+            }
+            else if (id_ex.r1==executing.r1 && (id_ex.opcode!=LDR && id_ex.opcode!=MOVI)){
+                data_hazard = 1;
+                EX.r1=1;
+            }
+            else if (id_ex.r2==executing.r1){
+                data_hazard = 1;
+                EX.r2=1;
+            }
+            data_stall=1;
+        }
+       }
+       printf("Data hazard:%d:, Data stall: %d...\n", data_hazard, data_stall);
         // Enqueue to Decode to Execute stage
         enqueue_id_ex(&id_ex_queue, &id_ex);
-
+        // if (!isEmpty(&id_ex_queue)){
+        //   printf("To be executed ");
+        //   print_queue(&id_ex_queue); // Print the queue after processing
+        // }
+       
         return;
     }
 }
