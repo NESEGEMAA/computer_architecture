@@ -1,0 +1,3 @@
+MOVI R1 5
+STR R1 1         ; MEM[1] = 5
+LDR R2 1         ; R2 = MEM[1] = 5
