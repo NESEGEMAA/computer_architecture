@@ -24,7 +24,16 @@ int main()
     id_ex_queue = *(createQueue()); // Decode to Execute stage
 
     // Load and parse assembly program directly into instruction memory
-    uint16_t program_size = parse_and_load_assembly_file("../src/CSEN.txt");
+    printf("Please enter the path to the assembly file (e.g., ../src/CSEN.txt):\n");
+
+    char assembly_file_path[100];
+    scanf("%s", assembly_file_path);
+
+    uint16_t program_size = parse_and_load_assembly_file(assembly_file_path);
+    if (program_size == 0) {
+        fprintf(stderr, "Error: No instructions loaded from the assembly file.\n");
+        return 1;
+    }
 
     // Print the instruction memory contents after parsing
     printf("\nInstruction Memory Contents:\n");
