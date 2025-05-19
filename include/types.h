@@ -29,7 +29,6 @@ struct ID_EX {
     int8_t immediate;
     ID_EX *next;
     int data_hazard;
-    int data_stall;
     int r1_forward;
     int r2_forward;
 };

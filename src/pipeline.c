@@ -4,8 +4,6 @@ int cycle = 1; // Cycle counter
 int decode_stall = 0;
 int execute_stall = 0;
 int stop = 0;  // Stop flag
-int data_hazard=0;
-int data_stall=0;
 struct EXEC EX = {0}; // Definition of the global EX variable
 
 
