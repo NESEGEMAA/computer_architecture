@@ -292,15 +292,24 @@ void _LDR()
     ID_EX id_ex = *(peek_id_ex(&id_ex_queue)); // Decode to Execute stage
 
     // Load to Register - load value from memory at address into register rd
-    int8_t value = read_data(id_ex.immediate);
-
+    uint8_t address = id_ex.immediate;
+    int8_t value = read_data(address);
     uint8_t rd = id_ex.r1;
+    
+    // Store old register value for comparison
+    int8_t old_value = read_register(rd);
+    
+    // Update the register
     write_register(rd, value);
 
-    printf("LDR: R%u = %d\n", rd, value);
+    printf("LDR: Memory[%d] = %d -> R%u\n", address, value, rd);
+    
+    // Report register value change
+    printf("  Register Change in Execute Stage: R%d changed from %d to %d\n", 
+           rd, old_value, value);
 }
 
-void _STR()
+void _STR()  
 {
     ID_EX id_ex = *(peek_id_ex(&id_ex_queue)); // Decode to Execute stage
 
@@ -308,8 +317,19 @@ void _STR()
     uint8_t rd = id_ex.r1;
     int8_t value = read_register(rd);
     int8_t address = id_ex.immediate;
-
+    
+    // Store old memory value for comparison
+    int8_t old_value = read_data(address);
+    
+    // Update the memory
     write_data(address, value);
 
-    printf("STR: Memory[%d] = %d\n", address, value);
+    // Print instruction and operands
+    printf("STR: R%u = %d -> Memory[%d]\n", rd, value, address);
+    
+    // Report memory value change if the value actually changed
+    if (old_value != value) {
+        printf("  Memory Change in Execute Stage: Memory[%d] changed from %d to %d\n", 
+               address, old_value, value);
+    }
 }

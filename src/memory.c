@@ -1,7 +1,7 @@
 #include "memory.h"
 #include <stdio.h>  // For fprintf
 #include <stdlib.h> // For exit
-#include "pipelining.h"
+#include "pipeline.h"
 
 data_word_t register_file[REG_COUNT];               // Register file (R0-R63)
 data_word_t data_memory[DATA_MEMORY_SIZE];          // Data memory
@@ -206,29 +206,3 @@ void print_data_memory(void)
         printf("No memory locations with non-zero values found.\n");
     }
 }
-
-// Function to write a value to a register and track updates
-// void write_register(uint8_t reg_num, data_word_t value) {
-//     if (reg_num < REG_COUNT) {
-//         register_file[reg_num] = value;
-//         reg_updates[reg_num].reg_num = reg_num;
-//         reg_updates[reg_num].new_value = value;
-//         reg_updates[reg_num].updated = true;
-//     } else {
-//         fprintf(stderr, "Error: Register write out of bounds at register %u\n", reg_num);
-//         exit(EXIT_FAILURE);
-//     }
-// }
-
-// Function to write data to data memory
-// void write_data(uint16_t address, data_word_t value) {
-//     if (address < DATA_MEMORY_SIZE) {
-//         data_memory[address] = value;
-//         mem_updates[address].addr = address;
-//         mem_updates[address].new_value = value;
-//         mem_updates[address].updated = true;
-//     } else {
-//         fprintf(stderr, "Error: Data memory write out of bounds at address %u\n", address);
-//         exit(EXIT_FAILURE);
-//     }
-// }

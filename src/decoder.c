@@ -37,7 +37,6 @@ void decode_stage()
     ID_EX id_ex = {0};   // Decode to Execute stage
 
     uint16_t instruction = if_id.instr; // Get instruction from IF/ID stage
-    printf("Instruction: 0x%04X\n", instruction);
 
     id_ex.pc = if_id.pc;
     id_ex.instruction = instruction;
@@ -77,22 +76,30 @@ void decode_stage()
             else
             {
                 id_ex.immediate = imm; // Positive immediate for SAL, SAR
-            }
-        } // Print decode stage information (register numbers only, no values)
+            }        
+        } 
+        // Print decode stage information with input and output values
         printf("Decode Stage:\n");
-        printf("  Instruction: 0x%04X\n", instruction);
-        printf("  Opcode: %u\n", id_ex.opcode);
+        printf("  Input: Instruction = 0x%04X from PC = %d\n", instruction, id_ex.pc - 1);
+        printf("  Opcode: %u (%s)\n", id_ex.opcode, get_opcode_mnemonic(id_ex.opcode));
         printf("  Format: %s\n", is_r_format ? "R-Format" : "I-Format");
-        printf("  R1: R%u\n", id_ex.r1);
+        
+        // Print detailed input/output information
+        printf("  Output: ");
         if (is_r_format)
         {
-            printf("  R2: R%u\n", id_ex.r2);
+            printf("R1: R%u = %d, R2: R%u = %d, PC: %u\n", 
+                   id_ex.r1, id_ex.r1_value, 
+                   id_ex.r2, id_ex.r2_value,
+                   id_ex.pc);
         }
         else
         {
-            printf("  Immediate: %d\n", id_ex.immediate);
+            printf("R1: R%u = %d, Immediate: %d, PC: %u\n", 
+                   id_ex.r1, id_ex.r1_value, 
+                   id_ex.immediate,
+                   id_ex.pc);
         }
-        printf("  PC: %u\n", id_ex.pc);
 
         // Print the instruction in human-readable format
         print_decoded_instruction(id_ex.opcode, id_ex.r1, id_ex.r2, id_ex.immediate, is_r_format);

@@ -150,7 +150,7 @@ uint16_t parse_and_load_assembly_file(const char *file_path)
     }
 
     fclose(file);
-    printf("[PARSER] Finished loading %d instructions.\n", address); // Debug summary
+    printf("[PARSER] Successfully finished loading %d instructions into memory.\n", address); // Debug summary
     return address;
 }
 
