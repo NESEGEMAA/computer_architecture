@@ -127,7 +127,7 @@ void decode_stage()
             }
         }
        }
-       printf("Data hazard:%d:, Data stall: %d...\n", id_ex.data_hazard, id_ex.data_stall);
+       printf("Data hazard:%d, Data stall: %d...\n", id_ex.data_hazard, id_ex.data_stall);
         // Enqueue to Decode to Execute stage
         enqueue_id_ex(&id_ex_queue, &id_ex);
         // if (!isEmpty(&id_ex_queue)){
