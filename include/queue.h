@@ -20,5 +20,6 @@ ID_EX *peek_id_ex(queue *q);
 int isEmpty(queue *q);
 int getQueueSize_if_id(queue *q);
 int getQueueSize_id_ex(queue *q);
+void print_queue(queue *q);
 
 #endif // QUEUE_H

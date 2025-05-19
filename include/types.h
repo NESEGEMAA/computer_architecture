@@ -6,8 +6,8 @@
 #include "instruction_map.h"
 
 typedef int8_t data_word_t;         // 8-bit data word
-typedef int16_t instruction_word_t; // 16-bit instruction word
-#define UNDEFINED_INT16 -32768
+typedef uint16_t instruction_word_t; // 16-bit instruction word
+#define UNDEFINED_INT16 32768
 
 // Forward declarations for recursive pointers
 typedef struct IF_ID IF_ID;

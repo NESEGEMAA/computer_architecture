@@ -28,4 +28,10 @@ int needs_sign_extension(uint8_t opcode);
 // Function to decode an instruction
 extern void decode_stage();
 
+// Function to get opcode mnemonic string
+const char *get_opcode_mnemonic(uint8_t opcode);
+
+// Function to print decoded instruction in human-readable format
+void print_decoded_instruction(uint8_t opcode, uint8_t r1, uint8_t r2, int8_t immediate, int is_r_format);
+
 #endif /* DECODER_H */

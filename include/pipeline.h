@@ -7,5 +7,6 @@
 
 
 void pipeline_cycle();
+extern int stop;
 
 #endif // PIPELINE_H

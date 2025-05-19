@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include "decoder.h"
+#include "pipeline.h"
 
 int is_r_format;
 
@@ -25,26 +26,24 @@ int needs_sign_extension(uint8_t opcode)
 // Function to decode an instruction
 void decode_stage()
 {
+    // Make sure queue is not empty before peeking
+    if (isEmpty(&if_id_queue))
+    {
+        printf("Decode Stage: No instruction to decode\n");
+        return;
+    }
+
     IF_ID if_id = *(peek_if_id(&if_id_queue)); // Instruction Fetch to Decode stage
-    ID_EX id_ex = {0}; // Decode to Execute stage
+    ID_EX id_ex = {0};   // Decode to Execute stage
 
     uint16_t instruction = if_id.instr; // Get instruction from IF/ID stage
+    printf("Instruction: 0x%04X\n", instruction);
+
     id_ex.pc = if_id.pc;
     id_ex.instruction = instruction;
 
     if (if_id.instr != UNDEFINED_INT16)
     {
-        // if (instruction == 0) {
-        //     // printf("Cycle %d: Decode stage is empty\n", cycle);
-        //     id_ex.opcode = 0;
-        //     id_ex.r1 = 0;
-        //     id_ex.r2 = 0;
-        //     id_ex.immediate = 0;
-
-        //     fprintf(stderr, "Error: incorrect instruction\n");
-        //     exit(EXIT_FAILURE);
-        // }
-
         // Extract opcode (bits 15:12)
         id_ex.opcode = (instruction >> 12) & 0xF;
 
@@ -79,13 +78,7 @@ void decode_stage()
             {
                 id_ex.immediate = imm; // Positive immediate for SAL, SAR
             }
-        }
-
-        dequeue_if_id(&if_id_queue); // Dequeue from IF to ID stage
-        enqueue_id_ex(&id_ex_queue, &id_ex); // Enqueue to Decode to Execute stage
-
-        // Print decode stage information (register numbers only, no values)
-        // printf("Cycle %d: Decode Stage\n", cycle);
+        } // Print decode stage information (register numbers only, no values)
         printf("Decode Stage:\n");
         printf("  Instruction: 0x%04X\n", instruction);
         printf("  Opcode: %u\n", id_ex.opcode);
@@ -101,127 +94,73 @@ void decode_stage()
         }
         printf("  PC: %u\n", id_ex.pc);
 
+        // Print the instruction in human-readable format
+        print_decoded_instruction(id_ex.opcode, id_ex.r1, id_ex.r2, id_ex.immediate, is_r_format);
+
+        // Dequeue from IF to ID stage (do this after processing the instruction)
+        dequeue_if_id(&if_id_queue);
+
+        // Enqueue to Decode to Execute stage
+        enqueue_id_ex(&id_ex_queue, &id_ex);
+
         return;
     }
 }
 
-// Main function for testing decode stage with CSEN.txt
-// int main(int argc, char* argv[]) {
-//     if (argc != 2) {
-//         fprintf(stderr, "Usage: %s <assembly_file>\n", argv[0]);
-//         return 1;
-//     }
+// Function to get opcode mnemonic string
+const char *get_opcode_mnemonic(uint8_t opcode)
+{
+    switch (opcode)
+    {
+    case ADD:
+        return "ADD";
+    case SUB:
+        return "SUB";
+    case MUL:
+        return "MUL";
+    case MOVI:
+        return "MOVI";
+    case BEQZ:
+        return "BEQZ";
+    case ANDI:
+        return "ANDI";
+    case EOR:
+        return "EOR";
+    case BR:
+        return "BR";
+    case SAL:
+        return "SAL";
+    case SAR:
+        return "SAR";
+    case LDR:
+        return "LDR";
+    case STR:
+        return "STR";
+    default:
+        return "UNKNOWN";
+    }
+}
 
-//     int instr_count = 0;
-//     // Parse the CSEN.txt assembly file
-//     Instruction* instructions = parse_assembly_file(argv[1], &instr_count);
+// Function to print decoded instruction in human-readable format
+void print_decoded_instruction(uint8_t opcode, uint8_t r1, uint8_t r2, int8_t immediate, int is_r_format)
+{
+    const char *mnemonic = get_opcode_mnemonic(opcode);
 
-//     if (instr_count == 0) {
-//         printf("No instructions parsed from %s.\n", argv[1]);
-//         free_instructions(instructions);
-//         return 1;
-//     }
+    printf("  Decoded: %s ", mnemonic);
 
-//     // Test decode stage for each parsed instruction
-//     for (int i = 0; i < instr_count; i++) {
-//         // Print the parsed instruction for reference
-//         printf("\nParsed Instruction %d:\n", i + 1);
-//         print_instruction(&instructions[i]);
+    // All instructions have at least one register
+    printf("R%u", r1);
 
-//         // Decode the instruction (use index as PC, i+1 as cycle)
-//         nstruction = decode_stage(instructions[i].binary, i, i + 1);
-//     }
+    if (is_r_format)
+    {
+        // R-format instructions have two registers
+        printf(" R%u", r2);
+    }
+    else
+    {
+        // I-format instructions have an immediate
+        printf(" %d", immediate);
+    }
 
-//     // Free the parsed instructions
-//     free_instructions(instructions);
-//     return 0;
-// }
-
-// Expected Output:
-/*Cycle 1:
-Parsed Instruction :
-Opcode: MOVI(3), Type : I, R1 : R1, Immediate : 10, Binary : 0xC04A
-Cycle 1 : Decode Stage
-Instruction : 0xC04A
-Opcode : 3
-Format : I - Format
-R1 : R1
-Immediate : 10
-PC : 0
-
-Cycle 2 :
-    Parsed Instruction :
-Opcode: MOVI(3), Type : I, R1 : R2, Immediate : 12, Binary : 0xC08C
-Cycle 2 : Decode Stage
-Instruction : 0xC08C
-Opcode : 3
-Format : I - Format
-R1 : R2
-Immediate : 12
-PC : 1
-
-Cycle 3 :
-    Parsed Instruction :
-Opcode: EOR(6), Type : R, R1 : R3, R2 : R1, Binary : 0x60C1
-Cycle 3 : Decode Stage
-Instruction : 0x60C1
-Opcode : 6
-Format : R - Format
-R1 : R3
-R2 : R1
-PC : 2
-
-Cycle 4 :
-    Parsed Instruction :
-Opcode: ADD(0), Type : R, R1 : R4, R2 : R3, Binary : 0x0103
-Cycle 4 : Decode Stage
-Instruction : 0x0103
-Opcode : 0
-Format : R - Format
-R1 : R4
-R2 : R3
-PC : 3
-
-Cycle 5 :
-    Parsed Instruction :
-Opcode: SUB(1), Type : R, R1 : R5, R2 : R1, Binary : 0x4141
-Cycle 5 : Decode Stage
-Instruction : 0x4141
-Opcode : 1
-Format : R - Format
-R1 : R5
-R2 : R1
-PC : 4
-
-Cycle 6 :
-    Parsed Instruction :
-Opcode: STR(11), Type : I, R1 : R3, Immediate : 31, Binary : 0xB0DF
-Cycle 6 : Decode Stage
-Instruction : 0xB0DF
-Opcode : 11
-Format : I - Format
-R1 : R3
-Immediate : 31
-PC : 5
-
-Cycle 7 :
-    Parsed Instruction :
-Opcode: LDR(10), Type : I, R1 : R6, Immediate : 31, Binary : 0xA17F
-Cycle 7 : Decode Stage
-Instruction : 0xA17F
-Opcode : 10
-Format : I - Format
-R1 : R6
-Immediate : 31
-PC : 6
-
-Cycle 8 :
-    Parsed Instruction :
-Opcode: BEQZ(4), Type : I, R1 : R6, Immediate : 2, Binary : 0xD182
-Cycle 8 : Decode Stage
-Instruction : 0xD182
-Opcode : 4
-Format : I - Format
-R1 : R6
-Immediate : 2
-PC : 7*/
+    printf("\n");
+}
