@@ -6,24 +6,12 @@
 #include <string.h>
 #include "memory.h" 
 
-// Define the instruction types
-// typedef enum
-// {
-//     R_TYPE, // Register type
-//     I_TYPE  // Immediate type
-// } InstructionType;
-
-// Define opcodes for each instruction
-
 // Structure to represent a parsed instruction
 typedef struct
 {
     Opcode opcode;
-    // InstructionType type;
     uint8_t operand_1;
     uint8_t operand_2;
-    // int16_t immediate;
-    // uint16_t binary; // The binary representation of the instruction
 } InstructionParser;
 
 /**

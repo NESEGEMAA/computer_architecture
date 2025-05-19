@@ -14,12 +14,6 @@
 extern queue if_id_queue; // Instruction Fetch to Decode stage
 extern queue id_ex_queue; // Decode to Execute stage
 
-// // Structure to hold decoded instruction fields
-// typedef struct {
-//     int is_r_format;     // 1 for R-Format, 0 for I-Format
-//     ID_EX id_ex;
-// } DecodedInstruction;
-
 // Function to check if instruction is R-Format
 int isit_r_format(uint8_t opcode);
 // Function to check if instruction needs sign extension for immediate

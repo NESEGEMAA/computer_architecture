@@ -127,10 +127,6 @@ void decode_stage()
        printf("Data hazard signal:%d\n", id_ex.data_hazard);
         // Enqueue to Decode to Execute stage
         enqueue_id_ex(&id_ex_queue, &id_ex);
-        // if (!isEmpty(&id_ex_queue)){
-        //   printf("To be executed ");
-        //   print_queue(&id_ex_queue); // Print the queue after processing
-        // }
        
         return;
     }

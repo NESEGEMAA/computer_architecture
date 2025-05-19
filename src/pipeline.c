@@ -3,9 +3,8 @@
 int cycle = 1; // Cycle counter
 int decode_stall = 0;
 int execute_stall = 0;
-int stop = 0;  // Stop flag
+int stop = 0;         // Stop flag
 struct EXEC EX = {0}; // Definition of the global EX variable
-
 
 void fetch_stage();
 void execute_stage();
@@ -16,28 +15,36 @@ void pipeline_cycle()
     printf("\nCycle %d\n", cycle);
     fetch_stage();
 
-    if (decode_stall > 0) {
+    if (decode_stall > 0)
+    {
         printf("Stalling decode stage (%d cycles left)\n", decode_stall);
         decode_stall--;
-    } else if (PC > 1) {
-            if (stop >=2){
+    }
+    else if (PC > 1)
+    {
+        if (stop >= 2)
+        {
             printf("Decode Stage: Stopped\n");
-            }
-            else
-              decode_stage();
+        }
+        else
+            decode_stage();
     }
 
-    if (execute_stall > 0) {
+    if (execute_stall > 0)
+    {
         printf("Stalling execute stage (%d cycles left)\n", execute_stall);
         execute_stall--;
-    } else if (PC > 2) {
-         if (stop>= 3){
-            printf("Execute Stage: Stopped\n");
-            sys_call=0;
-            return;
     }
+    else if (PC > 2)
+    {
+        if (stop >= 3)
+        {
+            printf("Execute Stage: Stopped\n");
+            sys_call = 0;
+            return;
+        }
         else
-           execute_stage();
+            execute_stage();
     }
 
     cycle++;
@@ -47,7 +54,7 @@ void fetch_stage()
 {
     // Store the PC value at the start of fetch
     instruction_word_t fetch_pc = PC;
-    
+
     // Fetch stage
     instruction_word_t instruction = read_instruction(PC);
     if (instruction == UNDEFINED_INT16)
@@ -73,66 +80,57 @@ void fetch_stage()
 
 void execute_stage()
 {
-    
+
     ID_EX id_ex = *(peek_id_ex(&id_ex_queue)); // Decode to Execute stage
 
     // Print the instruction entering the execute stage
-    printf("Execute Stage: Instruction: 0x%04X, Opcode: %s, PC: %d\n", 
-           id_ex.instruction, 
+    printf("Execute Stage: Instruction: 0x%04X, Opcode: %s, PC: %d\n",
+           id_ex.instruction,
            get_opcode_mnemonic(id_ex.opcode),
            id_ex.pc);
-    
+
     // Store register values before execution for comparison
     data_word_t old_register_values[REG_COUNT];
-    for (int i = 0; i < REG_COUNT; i++) {
+    for (int i = 0; i < REG_COUNT; i++)
+    {
         old_register_values[i] = read_register(i);
     }
-    
+
     // Store the SREG value before execution
     data_word_t old_SREG = SREG;
-    
+
     // Store PC before execution
     instruction_word_t old_PC = PC;
-    
+
     // Execute the instruction
     opcode_func(id_ex.opcode);
 
     // Check for changes in registers
-    for (int i = 0; i < REG_COUNT; i++) {
-        if (read_register(i) != old_register_values[i]) {
-            printf("  Register Change in Execute Stage: R%d changed from %d to %d\n", 
+    for (int i = 0; i < REG_COUNT; i++)
+    {
+        if (read_register(i) != old_register_values[i])
+        {
+            printf("  Register Change in Execute Stage: R%d changed from %d to %d\n",
                    i, old_register_values[i], read_register(i));
         }
     }
-    
+
     // Check for changes in SREG
-    if (SREG != old_SREG) {
-        printf("  SREG Change in Execute Stage: Changed from 0x%02X to 0x%02X\n", 
+    if (SREG != old_SREG)
+    {
+        printf("  SREG Change in Execute Stage: Changed from 0x%02X to 0x%02X\n",
                old_SREG, SREG);
     }
-    
+
     // Check for changes in PC (for branch instructions)
-    if (PC != old_PC) {
-        printf("  PC Change in Execute Stage: Changed from %d to %d\n", 
+    if (PC != old_PC)
+    {
+        printf("  PC Change in Execute Stage: Changed from %d to %d\n",
                old_PC, PC);
     }
-
-    // Dequeue from Decode to Execute stage
-    //  if (isEmpty(&id_ex_queue))
-    // { 
-    //     printf("Execute Stage: Stopped.\n");
-    //     sys_call = 0; // Stop execution if queue is empty
-    //     printf("sys_call=%d\n",sys_call);
-    //     return;
-    // }
-    //  if (id_ex.data_hazard == 1 && id_ex.data_stall == 1)
-    //     {
-    //         id_ex.data_stall = 0;
-    //     }
-        if (!isEmpty(&id_ex_queue))
+    if (!isEmpty(&id_ex_queue))
         dequeue_id_ex(&id_ex_queue);
-       
-    } 
+}
 
 void opcode_func(Opcode opcode)
 {
