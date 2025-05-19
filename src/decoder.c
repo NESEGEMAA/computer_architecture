@@ -29,7 +29,7 @@ void decode_stage()
     // Make sure queue is not empty before peeking
     if (isEmpty(&if_id_queue))
     {
-        printf("Decode Stage: No instruction to decode\n");
+        printf("Decode Stage: Stopped\n");
         return;
     }
 

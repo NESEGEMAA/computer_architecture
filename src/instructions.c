@@ -2,7 +2,7 @@
 #include "pipeline.h"
 
 // Helper function to update the Carry flag (C)
-void update_carry_flag(int8_t result)
+void update_carry_flag(int16_t result)
 {
     if (result > 255)
     {

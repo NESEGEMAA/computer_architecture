@@ -1,7 +1,6 @@
 #include "pipeline.h"
 
 int cycle = 0; // Cycle counter
-int stop = 0;  // Stop flag
 
 void fetch_stage();
 void execute_stage();
@@ -14,17 +13,11 @@ void pipeline_cycle()
 
     if (PC > 1)
     {
-        if (stop >= 2)
-            printf("Decode Stage: Stopped\n");
-        else
             decode_stage(); // since fetch increments PC by 1 so decode should be skipped for first cycle
     }
 
     if (PC > 2)
     {
-        if (stop >= 3)
-            printf("Execute Stage: Stopped\n");
-        else
         execute_stage();
     }
 
@@ -33,6 +26,10 @@ void pipeline_cycle()
 
 void fetch_stage()
 {
+     if (isEmpty(&id_ex_queue))
+    { 
+        printf("Execute Stage: Stopped.\n");
+    }
     IF_ID if_id = {0}; // Instruction Fetch to Decode stage
 
     // Store the PC value at the start of fetch
@@ -42,7 +39,6 @@ void fetch_stage()
     instruction_word_t instruction = read_instruction(PC);
     if (instruction == UNDEFINED_INT16)
     {
-        stop++;
         printf("Fetch Stage: Stopped\n");
         return;
     }
@@ -116,10 +112,11 @@ void execute_stage()
 
     // Dequeue from Decode to Execute stage
     dequeue_id_ex(&id_ex_queue);
-
-    if (isEmpty(&id_ex_queue))
-    {
+     if (isEmpty(&id_ex_queue))
+    { 
+        printf("Execute Stage: Stopped.\n");
         sys_call = 0; // Stop execution if queue is empty
+        printf("sys_call=%d\n",sys_call);
         return;
     }
 }
