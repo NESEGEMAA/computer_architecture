@@ -135,34 +135,35 @@ void print_instruction_memory(void)
     {
         instruction_word_t value = instr_memory[i];
 
-        // Skip if memory location is zero
-        if (value == 0)
+        // Skip if memory location is UNDEFINED_INT16
+        if (value == UNDEFINED_INT16)
             continue;
-            
+
         memory_found = 1;
         // Print address and hex representation
-        printf("Address 0x%04X: 0x%04X ", i, value);
+        printf("Address 0x%04X: 0x%04X ", i, (uint16_t)value); // Cast to uint16_t for proper display
         // First 4 bits
         for (int bit = 15; bit >= 12; bit--)
         {
-            printf("%d", (value >> bit) & 0x1);
+            printf("%d", ((uint16_t)value >> bit) & 0x1);
         }
         printf(" ");
 
         // Middle 6 bits
         for (int bit = 11; bit >= 6; bit--)
         {
-            printf("%d", (value >> bit) & 0x1);
+            printf("%d", ((uint16_t)value >> bit) & 0x1);
         }
         printf(" ");
 
         // Last 6 bits
         for (int bit = 5; bit >= 0; bit--)
         {
-            printf("%d", (value >> bit) & 0x1);
-        }        printf("\n");
+            printf("%d", ((uint16_t)value >> bit) & 0x1);
+        }
+        printf("\n");
     }
-    
+
     if (!memory_found)
     {
         printf("No memory locations with non-zero values found.\n");

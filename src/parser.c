@@ -1,5 +1,5 @@
-#include "../include/globals.h"
-#include "../include/parser.h"
+#include "globals.h"
+#include "parser.h"
 #include <ctype.h> // for isspace()
 #include <stdio.h> // for printf
 
@@ -17,45 +17,13 @@ static Opcode get_opcode_from_mnemonic(const char *mnemonic)
     return opcode;
 }
 
-// Helper function to get the instruction type from the opcode
-// static InstructionType get_instruction_type(Opcode opcode)
-// {
-//     switch (opcode)
-//     {
-//     case ADD:
-//     case SUB:
-//     case MUL:
-//     case EOR:
-//     case BR:
-//         return R_TYPE;
-//     case MOVI:
-//     case BEQZ:
-//     case ANDI:
-//     case SAL:
-//     case SAR:
-//     case LDR:
-//     case STR:
-//         return I_TYPE;
-//     default:
-//         fprintf(stderr, "[PARSER] Unknown opcode: %d\n", opcode);
-//         exit(EXIT_FAILURE);
-//     }
-// }
-
 // Helper function to extract register number from a string like "R12"
 static uint8_t extract_register_number_or_immediate(const char *reg_str)
 {
     if (reg_str[0] != 'R')
     {
-        // If not "R", treat as immediate (6-bit)
-        int16_t value = atoi(reg_str);
-        // Ensure the value fits in 6 bits (0-63)
-        if (value < 0 || value > 63)
-        {
-            fprintf(stderr, "[PARSER] Error: Immediate value %d out of range (0-63) for 6-bit field\n", value);
-            return value & 0x3F; // Return truncated value (6 bits only)
-        }
-        return (uint8_t)(value & 0x3F); // Ensure only 6 bits are used
+        int16_t value = atoi(reg_str);  // If not "R", treat as immediate (6-bit)
+        return (uint8_t)(value & 0x3F);
     }
     return (uint8_t)atoi(reg_str + 1);
 }
@@ -64,11 +32,6 @@ static uint8_t extract_register_number_or_immediate(const char *reg_str)
 static int16_t extract_immediate(const char *imm_str)
 {
     int16_t value = (int16_t)atoi(imm_str);
-    // We're keeping this as a 16-bit value, but displaying a warning if it exceeds 6-bit range
-    if (value < 0 || value > 63)
-    {
-        fprintf(stderr, "[PARSER] Warning: Immediate value %d exceeds 6-bit range (0-63)\n", value);
-    }
     return value;
 }
 
@@ -152,25 +115,11 @@ static instruction_word_t parse_instruction_line(const char *line)
         }
     }
 
-    // if (instr.type == R_TYPE)
-    // {
     instr.operand_1 = extract_register_number_or_immediate(operand_list[0]);
     instr.operand_2 = extract_register_number_or_immediate(operand_list[1]);
-    //     instr.immediate = 0;
 
-    //     printf("[PARSER]   Parsed R-type: R1 = R%d, R2 = R%d\n", instr.r1, instr.r2); // Debug
-    // }
-    // else
-    // {
-    //     instr.r1 = extract_register_number(operand_list[0]);
-    //     instr.r2 = 0;
-    //     instr.immediate = extract_immediate(operand_list[1]);
-
-    //     printf("[PARSER]   Parsed I-type: R1 = R%d, Immediate = %d\n", instr.r1, instr.immediate); // Debug
-    // }
-
-    instruction_word_t binary = instruction_to_binary(&instr);
-    printf("[PARSER]   Binary: 0x%04X\n\n", binary); // Debug: show binary representation
+    uint16_t binary = instruction_to_binary(&instr);
+    printf("[PARSER]   HEX: 0x%04X\n\n", binary); // Debug: show binary representation
 
     return binary;
 }
@@ -196,7 +145,7 @@ uint16_t parse_and_load_assembly_file(const char *file_path)
         if (strlen(line) == 0)
             continue; // Skip empty lines
 
-        instruction_word_t current_instruction = parse_instruction_line(line);
+        uint16_t current_instruction = parse_instruction_line(line);
         write_instruction(address++, current_instruction);
     }
 
@@ -205,22 +154,7 @@ uint16_t parse_and_load_assembly_file(const char *file_path)
     return address;
 }
 
-void print_instruction_binary(const instruction_word_t binary)
+void print_instruction_binary(const uint16_t binary)
 {
-    // const char *type_str = (instr->type == R_TYPE) ? "R" : "I";
-    // const char *opcode_str[] = {
-    //     "ADD", "SUB", "MUL", "MOVI", "BEQZ",
-    //     "ANDI", "EOR", "BR", "SAL", "SAR", "LDR", "STR"};
-    // printf("[PARSER] Opcode: %s (%d), Type: %s, ",
-    //        opcode_str[instr->opcode], instr->opcode, type_str);
-    // if (instr->type == R_TYPE)
-    // {
-    //     printf("[PARSER] R1: R%d, R2: R%d", instr->r1, instr->r2);
-    // }
-    // else
-    // {
-    //     printf("[PARSER] R1: R%d, Immediate: %d", instr->r1, instr->immediate);
-    // }
-
-    printf("[PARSER] , Binary: 0x%04X\n", binary);
+    printf("[PARSER]   Binary: 0x%04X\n", binary);
 }
