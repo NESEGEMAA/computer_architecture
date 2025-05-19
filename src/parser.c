@@ -17,13 +17,16 @@ static Opcode get_opcode_from_mnemonic(const char *mnemonic)
     return opcode;
 }
 
-// Helper function to extract register number from a string like "R12"
+
+// Helper function to extract register number from a string like "R12" or an immediate value (6-bit)
+
 static uint8_t extract_register_number_or_immediate(const char *reg_str)
 {
     if (reg_str[0] != 'R')
     {
         int16_t value = atoi(reg_str);  // If not "R", treat as immediate (6-bit)
         return (uint8_t)(value & 0x3F);
+
     }
     return (uint8_t)atoi(reg_str + 1);
 }
@@ -56,7 +59,7 @@ static uint16_t instruction_to_binary(const InstructionParser *instr)
     binary |= (instr->opcode & 0xF) << 12;    // Opcode (4 bits)
     binary |= (instr->operand_1 & 0x3F) << 6; // R1 (6 bits)
     binary |= (instr->operand_2 & 0x3F);      // R2 (6 bits) or immediate (6 bits)
-
+  
     return binary;
 }
 
@@ -97,7 +100,7 @@ static instruction_word_t parse_instruction_line(const char *line)
     if (strchr(operands, ',') != NULL)
     {
         char *token = strtok(operands, ",");
-        while (token && j < 3)
+        while (token && j < 2)
         {
             while (*token == ' ')
                 token++;
@@ -108,12 +111,14 @@ static instruction_word_t parse_instruction_line(const char *line)
     else
     {
         char *token = strtok(operands, " \t");
-        while (token && j < 3)
+        while (token && j < 2)
         {
             operand_list[j++] = token;
             token = strtok(NULL, " \t");
         }
     }
+    instr.r1 = extract_register_number_or_immediate(operand_list[0]);
+    instr.r2 = extract_register_number_or_immediate(operand_list[1]);
 
     instr.operand_1 = extract_register_number_or_immediate(operand_list[0]);
     instr.operand_2 = extract_register_number_or_immediate(operand_list[1]);
