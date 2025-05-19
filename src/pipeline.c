@@ -86,7 +86,7 @@ void execute_stage()
 
     // Print the values entering the stage
     printf("  Input Values: ");
-    if (isit_r_format(id_ex.opcode)) {
+    if (isit_r_format(id_ex.opcode)) {//CHECK IF ITS RIGHT BECAUSE WE DO NOT ALWAYS USE ID_EX Maybe a data hazard occured
         printf("R%d = %d, R%d = %d\n", id_ex.r1, id_ex.r1_value, id_ex.r2, id_ex.r2_value);
     } else {
         printf("R%d = %d, Immediate = %d\n", id_ex.r1, id_ex.r1_value, id_ex.immediate);

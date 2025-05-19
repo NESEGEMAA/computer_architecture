@@ -242,7 +242,7 @@ void _BEQZ()
         {
             dequeue_id_ex(&id_ex_queue);
         }
-
+        printf("Flushing out previous instructions in the fetch and decode stages...\n");
         decode_stall = 1;
         execute_stall = 2;
         PC = id_ex.pc + immediate;
@@ -347,6 +347,7 @@ void _BR()
     data_hazard = 0;
     decode_stall = 1;
     execute_stall = 2;
+    printf("Flushing out previous instructions in the fetch and decode stages...\n");
 
     PC = new_pc;
     
