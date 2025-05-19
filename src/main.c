@@ -24,7 +24,7 @@ int main()
     id_ex_queue = *(createQueue()); // Decode to Execute stage
 
     // Load and parse assembly program directly into instruction memory
-    uint16_t program_size = parse_and_load_assembly_file("../src/CSEN.txt");
+    uint16_t program_size = parse_and_load_assembly_file("../tests/test0.txt");
 
     // Print the instruction memory contents after parsing
     printf("\nInstruction Memory Contents:\n");
