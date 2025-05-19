@@ -119,11 +119,11 @@ void _ADD()
     data_word_t destination = id_ex.r1_value;
     data_word_t source = id_ex.r2_value;
 
-    printf("ADD: data_hazard=%d, data_stall=%d, r1_forward=%d, r2_forward=%d\n", 
-           id_ex.data_hazard, id_ex.data_stall, id_ex.r1_forward, id_ex.r2_forward);
+    printf("ADD: data_hazard=%d, r1_forward=%d, r2_forward=%d\n", 
+           id_ex.data_hazard, id_ex.r1_forward, id_ex.r2_forward);
 
     // Data hazard forwarding for source operand
-    if (id_ex.data_hazard==1 && id_ex.data_stall==0) {
+    if (id_ex.data_hazard==1) {
         if(id_ex.r2_forward==1)
         source = EX.result;
         if(id_ex.r1_forward==1)
@@ -150,11 +150,11 @@ void _SUB()
     data_word_t destination = id_ex.r1_value;
     data_word_t source = id_ex.r2_value;
 
-    printf("SUB: data_hazard=%d, data_stall=%d, r1_forward=%d, r2_forward=%d\n", 
-           id_ex.data_hazard, id_ex.data_stall, id_ex.r1_forward, id_ex.r2_forward);
+    printf("SUB: data_hazard=%d, r1_forward=%d, r2_forward=%d\n", 
+           id_ex.data_hazard, id_ex.r1_forward, id_ex.r2_forward);
 
     // Data hazard forwarding
-    if (id_ex.data_hazard==1 && id_ex.data_stall==0) {
+    if (id_ex.data_hazard==1) {
         if(id_ex.r1_forward==1)
             destination = EX.result;
         if(id_ex.r2_forward==1) 
@@ -181,11 +181,11 @@ void _MUL()
     data_word_t destination = id_ex.r1_value;
     data_word_t source = id_ex.r2_value;
 
-    printf("MUL: data_hazard=%d, data_stall=%d, r1_forward=%d, r2_forward=%d\n", 
-           id_ex.data_hazard, id_ex.data_stall, id_ex.r1_forward, id_ex.r2_forward);
+    printf("MUL: data_hazard=%d, r1_forward=%d, r2_forward=%d\n", 
+           id_ex.data_hazard, id_ex.r1_forward, id_ex.r2_forward);
 
     // Data hazard forwarding
-    if (id_ex.data_hazard==1 && id_ex.data_stall==0) {
+    if (id_ex.data_hazard==1) {
         if(id_ex.r1_forward==1)
             destination = EX.result;
         if(id_ex.r2_forward==1) 
@@ -212,8 +212,8 @@ void _MOVI()
     uint8_t rd = id_ex.r1;
     int8_t immediate = id_ex.immediate;
     
-    printf("MOVI: data_hazard=%d, data_stall=%d, r1_forward=%d, r2_forward=%d\n", 
-           id_ex.data_hazard, id_ex.data_stall, id_ex.r1_forward, id_ex.r2_forward);
+    printf("MOVI: data_hazard=%d, r1_forward=%d, r2_forward=%d\n", 
+           id_ex.data_hazard, id_ex.r1_forward, id_ex.r2_forward);
     
     EX.result = immediate;
 
@@ -229,11 +229,11 @@ void _BEQZ()
     int8_t value = id_ex.r1_value;
     int8_t immediate = id_ex.immediate;
     
-    printf("BEQZ: data_hazard=%d, data_stall=%d, r1_forward=%d, r2_forward=%d\n", 
-           id_ex.data_hazard, id_ex.data_stall, id_ex.r1_forward, id_ex.r2_forward);
+    printf("BEQZ: data_hazard=%d, r1_forward=%d, r2_forward=%d\n", 
+           id_ex.data_hazard, id_ex.r1_forward, id_ex.r2_forward);
     
     // Add data hazard forwarding for r1
-    if (id_ex.data_hazard==1 && id_ex.data_stall==0) {
+    if (id_ex.data_hazard==1) {
         if(id_ex.r1_forward==1) {
             value = EX.result;
             printf("Data hazard detected in BEQZ instruction. Forwarding value: %d...\n", value);
@@ -254,7 +254,7 @@ void _BEQZ()
         {
             dequeue_id_ex(&id_ex_queue);
         }
-        printf("Flushing out previous instructions in the fetch and decode stages...\n");
+        printf("Control hazard detected -> Flushing out previous instructions in the fetch and decode stages...\n");
         decode_stall = 1;
         execute_stall = 2;
         PC = id_ex.pc + immediate;
@@ -270,11 +270,11 @@ void _ANDI()
     int8_t destination = id_ex.r1_value;
     int8_t immediate = id_ex.immediate;
 
-    printf("ANDI: data_hazard=%d, data_stall=%d, r1_forward=%d, r2_forward=%d\n", 
-           id_ex.data_hazard, id_ex.data_stall, id_ex.r1_forward, id_ex.r2_forward);
+    printf("ANDI: data_hazard=%d, r1_forward=%d, r2_forward=%d\n", 
+           id_ex.data_hazard, id_ex.r1_forward, id_ex.r2_forward);
 
     // Data hazard forwarding - only check r1
-    if (id_ex.data_hazard==1 && id_ex.data_stall==0) {
+    if (id_ex.data_hazard==1) {
         if(id_ex.r1_forward==1) {
             destination = EX.result;
             printf("Data hazard detected in ANDI instruction. Forwarding value: %d...\n", destination);
@@ -300,11 +300,11 @@ void _EOR()
     int8_t destination = id_ex.r1_value;
     int8_t source = id_ex.r2_value;
 
-    printf("EOR: data_hazard=%d, data_stall=%d, r1_forward=%d, r2_forward=%d\n", 
-           id_ex.data_hazard, id_ex.data_stall, id_ex.r1_forward, id_ex.r2_forward);
+    printf("EOR: data_hazard=%d, r1_forward=%d, r2_forward=%d\n", 
+           id_ex.data_hazard, id_ex.r1_forward, id_ex.r2_forward);
 
     // Data hazard forwarding
-    if (id_ex.data_hazard==1 && id_ex.data_stall==0) {
+    if (id_ex.data_hazard==1) {
         if(id_ex.r1_forward==1)
             destination = EX.result;
         if(id_ex.r2_forward==1) 
@@ -332,11 +332,11 @@ void _BR()
     int8_t high_byte = id_ex.r1_value;
     int8_t low_byte = id_ex.r2_value;
 
-    printf("BR: data_hazard=%d, data_stall=%d, r1_forward=%d, r2_forward=%d\n", 
-           id_ex.data_hazard, id_ex.data_stall, id_ex.r1_forward, id_ex.r2_forward);
+    printf("BR: data_hazard=%d, r1_forward=%d, r2_forward=%d\n", 
+           id_ex.data_hazard, id_ex.r1_forward, id_ex.r2_forward);
 
     // Data hazard forwarding for both registers
-    if (id_ex.data_hazard==1 && id_ex.data_stall==0) {
+    if (id_ex.data_hazard==1) {
         // Check if r1 (high byte) needs forwarding
         if(id_ex.r1_forward==1) {
             high_byte = EX.result;
@@ -365,7 +365,7 @@ void _BR()
     id_ex.data_hazard=0;
     decode_stall = 1;
     execute_stall = 2;
-    printf("Flushing out previous instructions in the fetch and decode stages...\n");
+    printf("Control hazard detected -> Flushing out previous instructions in the fetch and decode stages...\n");
 
     PC = new_pc;
     
@@ -378,11 +378,11 @@ void _SAL()
     int8_t destination = id_ex.r1_value;
     int8_t immediate = id_ex.immediate;
 
-    printf("SAL: data_hazard=%d, data_stall=%d, r1_forward=%d, r2_forward=%d\n", 
-           id_ex.data_hazard, id_ex.data_stall, id_ex.r1_forward, id_ex.r2_forward);
+    printf("SAL: data_hazard=%d, r1_forward=%d, r2_forward=%d\n", 
+           id_ex.data_hazard, id_ex.r1_forward, id_ex.r2_forward);
 
     // Data hazard forwarding - only check r1
-    if (id_ex.data_hazard==1 && id_ex.data_stall==0) {
+    if (id_ex.data_hazard==1) {
         if(id_ex.r1_forward==1) {
             destination = EX.result;
             printf("Data hazard detected in SAL instruction. Forwarding value: %d...\n", destination);
@@ -408,11 +408,11 @@ void _SAR()
     int8_t destination = id_ex.r1_value;
     int8_t immediate = id_ex.immediate;
 
-    printf("SAR: data_hazard=%d, data_stall=%d, r1_forward=%d, r2_forward=%d\n", 
-           id_ex.data_hazard, id_ex.data_stall, id_ex.r1_forward, id_ex.r2_forward);
+    printf("SAR: data_hazard=%d, r1_forward=%d, r2_forward=%d\n", 
+           id_ex.data_hazard, id_ex.r1_forward, id_ex.r2_forward);
 
     // Data hazard forwarding - only check r1
-    if (id_ex.data_hazard==1 && id_ex.data_stall==0) {
+    if (id_ex.data_hazard==1) {
         if(id_ex.r1_forward==1) {
             destination = EX.result;
             printf("Data hazard detected in SAR instruction. Forwarding value: %d...\n", destination);
@@ -440,10 +440,10 @@ void _LDR()
     int8_t value;
     uint8_t rd = id_ex.r1;
 
-    printf("LDR: data_hazard=%d, data_stall=%d, r1_forward=%d, r2_forward=%d\n", 
-           id_ex.data_hazard, id_ex.data_stall, id_ex.r1_forward, id_ex.r2_forward);
+    printf("LDR: data_hazard=%d, r1_forward=%d, r2_forward=%d\n", 
+           id_ex.data_hazard, id_ex.r1_forward, id_ex.r2_forward);
 
-    if (id_ex.data_hazard==1 && id_ex.data_stall==0)
+    if (id_ex.data_hazard==1)
         {
             value = EX.result;
             printf("Data hazard detected in LDR instruction. Forwarding Memory Data : %d...\n",value);
@@ -477,10 +477,10 @@ void _STR()
     int8_t value ;
     int8_t address ;
     
-    printf("STR: data_hazard=%d, data_stall=%d, r1_forward=%d, r2_forward=%d\n", 
-           id_ex.data_hazard, id_ex.data_stall, id_ex.r1_forward, id_ex.r2_forward);
+    printf("STR: data_hazard=%d, r1_forward=%d, r2_forward=%d\n", 
+           id_ex.data_hazard, id_ex.r1_forward, id_ex.r2_forward);
     
-    if (id_ex.data_hazard==1 && id_ex.data_stall==0) {
+    if (id_ex.data_hazard==1) {
         value = EX.result;
         printf("Data hazard detected in STR instruction. Forwarding Register Value : %d...\n",value);
         id_ex.data_hazard=0;

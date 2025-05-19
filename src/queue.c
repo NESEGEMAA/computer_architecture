@@ -58,7 +58,6 @@ void enqueue_id_ex(queue *q, ID_EX *id_ex)
     new_id_ex->immediate = id_ex->immediate;
     // Copy hazard-related fields
     new_id_ex->data_hazard = id_ex->data_hazard;
-    new_id_ex->data_stall = id_ex->data_stall;
     new_id_ex->r1_forward = id_ex->r1_forward;
     new_id_ex->r2_forward = id_ex->r2_forward;
     new_id_ex->next = NULL;
