@@ -24,10 +24,10 @@ int main()
     id_ex_queue = *(createQueue()); // Decode to Execute stage
 
     // Load and parse assembly program directly into instruction memory
-    printf("Please enter the path to the assembly file (e.g., ../src/CSEN.txt):\n");
-
     char assembly_file_path[100];
-    scanf("%s", assembly_file_path);
+
+    printf("Please enter the path to the assembly file (e.g., ../src/CSEN.txt):\n");
+    scanf("%99s", assembly_file_path);  // Safe scanf usage
 
     uint16_t program_size = parse_and_load_assembly_file(assembly_file_path);
     if (program_size == 0) {
