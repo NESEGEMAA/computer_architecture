@@ -89,6 +89,7 @@ void write_data(uint16_t address, data_word_t value)
     if (address < DATA_MEMORY_SIZE)
     {
         data_memory[address] = value;
+        printf("Data written to address %u: %d\n", address, value);
     }
     else
     {

@@ -1,6 +1,6 @@
 #include "pipeline.h"
 
-int cycle = 0; // Cycle counter
+int cycle = 1; // Cycle counter
 int decode_stall = 0;
 int execute_stall = 0;
 int stop = 0;  // Stop flag
@@ -83,14 +83,6 @@ void execute_stage()
            id_ex.instruction, 
            get_opcode_mnemonic(id_ex.opcode),
            id_ex.pc);
-
-    // Print the values entering the stage
-    printf("  Input Values: ");
-    if (isit_r_format(id_ex.opcode)) {//CHECK IF ITS RIGHT BECAUSE WE DO NOT ALWAYS USE ID_EX Maybe a data hazard occured
-        printf("R%d = %d, R%d = %d\n", id_ex.r1, id_ex.r1_value, id_ex.r2, id_ex.r2_value);
-    } else {
-        printf("R%d = %d, Immediate = %d\n", id_ex.r1, id_ex.r1_value, id_ex.immediate);
-    }
     
     // Store register values before execution for comparison
     data_word_t old_register_values[REG_COUNT];
@@ -135,14 +127,13 @@ void execute_stage()
     //     printf("sys_call=%d\n",sys_call);
     //     return;
     // }
-    dequeue_id_ex(&id_ex_queue); 
-    if (data_hazard==1&&data_stall==1){
-        data_stall=0;
-    }
- 
-    
-    
-}
+        if (!isEmpty(&id_ex_queue))
+        dequeue_id_ex(&id_ex_queue);
+        if (data_hazard == 1 && data_stall == 1)
+        {
+            data_stall = 0;
+        }
+    } 
 
 void opcode_func(Opcode opcode)
 {

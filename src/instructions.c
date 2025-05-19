@@ -129,6 +129,8 @@ void _ADD()
         data_hazard = 0;
         data_stall = 1;
     }
+    printf("  Input Values to execute stage: ");
+    printf("R%d = %d, R%d = %d\n", id_ex.r1, destination, id_ex.r2, source);
 
     int16_t result = destination + source;
     EX.result = result;
@@ -159,6 +161,8 @@ void _SUB()
         data_hazard = 0;
         data_stall = 1;
     }
+    printf("  Input Values to execute stage: ");
+    printf("R%d = %d, R%d = %d\n", id_ex.r1, destination, id_ex.r2, source);
 
     int16_t result = destination - source;
     EX.result = result;
@@ -188,6 +192,8 @@ void _MUL()
         data_hazard = 0;
         data_stall = 1;
     }
+    printf("  Input Values to execute stage: ");
+    printf("R%d = %d, R%d = %d\n", id_ex.r1, destination, id_ex.r2, source);
 
     int16_t result = destination * source;
     EX.result = result;
@@ -202,10 +208,14 @@ void _MUL()
 
 void _MOVI()
 {
+
     ID_EX id_ex = *(peek_id_ex(&id_ex_queue)); // Decode to Execute stage
     uint8_t rd = id_ex.r1;
     int8_t immediate = id_ex.immediate;
     EX.result = immediate;
+    
+    printf("  Input Values to execute stage: ");
+    printf("R%d = %d, Immediate = %d\n", id_ex.r1, id_ex.r1_value, id_ex.immediate);
 
     // Move immediate value to register rd
     write_register(rd, immediate);
@@ -228,9 +238,11 @@ void _BEQZ()
         data_hazard = 0;
         data_stall = 1;
     }
-    
+
+    printf("  Input Values to execute stage: ");
+    printf("R%d = %d, Immediate = %d\n", id_ex.r1, value, immediate);
     EX.result = immediate;
-    
+
     if (value == 0)
     {
         while (!isEmpty(&if_id_queue))
@@ -268,6 +280,8 @@ void _ANDI()
         data_stall = 1;
     }
 
+    printf("  Input Values to execute stage: ");
+    printf("R%d = %d, Immediate = %d\n", id_ex.r1, destination, immediate);
     int8_t result = destination & immediate;
     EX.result = result;
 
@@ -298,6 +312,8 @@ void _EOR()
         data_stall = 1;
     }
 
+    printf("  Input Values to execute stage: ");
+    printf("R%d = %d, R%d = %d\n", id_ex.r1, destination, id_ex.r2, source);
     int8_t result = destination ^ source;
     EX.result = result;
 
@@ -331,7 +347,8 @@ void _BR()
         data_hazard = 0;
         data_stall = 1;
     }
-
+    printf("  Input Values to execute stage: ");
+    printf("R%d = %d, R%d = %d\n", id_ex.r1, high_byte, id_ex.r2, low_byte);
     // Concatenate the two registers to form a 16-bit address
     uint16_t new_pc = ((uint16_t)(uint8_t)high_byte << 8) | (uint8_t)low_byte;
     EX.result = new_pc;
@@ -369,7 +386,8 @@ void _SAL()
         data_hazard = 0;
         data_stall = 1;
     }
-
+    printf("  Input Values to execute stage: ");
+    printf("R%d = %d, Immediate = %d\n", id_ex.r1, destination, immediate);
     int16_t result = destination << immediate;
     EX.result = result;
 
@@ -397,6 +415,8 @@ void _SAR()
         data_hazard = 0;
         data_stall = 1;
     }
+    printf("  Input Values to execute stage: ");
+    printf("R%d = %d, Immediate = %d\n", id_ex.r1, destination, immediate);
 
     int16_t result = destination >> immediate;
     EX.result = result;
@@ -429,6 +449,8 @@ void _LDR()
     address = id_ex.immediate;
     value = read_data(address);
     }
+    printf("  Input Values to execute stage: ");
+    printf("R%d = %d, Immediate = %d\n", id_ex.r1, value, address);
     rd = id_ex.r1;
     
     // Store old register value for comparison
@@ -459,11 +481,12 @@ void _STR()
     
     // Store from Register - store value from register rd into memory at address
    else
-     value = id_ex.r1_value;
-    
+    value = id_ex.r1_value;
     rd = id_ex.r1;
     address = id_ex.immediate;
-    
+    printf("  Input Values to execute stage: ");
+    printf("R%d = %d, Immediate = %d\n", id_ex.r1, value, address);
+
     // Store old memory value for comparison
     int8_t old_value = read_data(address);
     EX.result = value;
