@@ -2,16 +2,17 @@
 #include "pipeline.h"
 #include "types.h"
 
+// SREG : 000CVNSZ
 // Helper function to update the Carry flag (C)
 void update_carry_flag(int16_t result)
 {
     if (result > 255)
     {
-        SREG |= 0b00000001; // Set the carry flag
+        SREG |= 0b000010000; // Set the carry flag
     }
     else
     {
-        SREG &= ~0b00000001; // Clear the carry flag
+        SREG &= ~0b00010000; // Clear the carry flag
     }
 }
 
@@ -22,22 +23,22 @@ void update_overflow_flag(Instruction instruction, int8_t destination, int8_t so
     {
         if (((destination > 0) && (source > 0) && (result < 0)) || ((destination < 0) && (source < 0) && (result > 0)))
         {
-            SREG |= 0b00000010; // Set the overflow flag
+            SREG |= 0b00010000; // Set the overflow flag
         }
         else
         {
-            SREG &= ~0b00000010; // Clear the overflow flag
+            SREG &= ~0b00010000; // Clear the overflow flag
         }
     }
     else if (instruction == SUB)
     {
         if (((destination < 0) && (source > 0) && (result > 0)) || ((destination > 0) && (source < 0) && (result < 0)))
         {
-            SREG |= 0b00000010; // Set the overflow flag
+            SREG |= 0b00010000; // Set the overflow flag
         }
         else
         {
-            SREG &= ~0b00000010; // Clear the overflow flag
+            SREG &= ~0b00010000; // Clear the overflow flag
         }
     }
 }
@@ -60,11 +61,11 @@ void update_sign_flag()
 {
     if (((SREG & 0b00000100) >> 2) ^ ((SREG & 0b00000010) >> 1))
     {
-        SREG |= 0b00001000; // Set the sign flag
+        SREG |= 0b00000010; // Set the sign flag
     }
     else
     {
-        SREG &= ~0b00001000; // Clear the sign flag
+        SREG &= ~0b00000010; // Clear the sign flag
     }
 }
 
@@ -73,11 +74,11 @@ void update_zero_flag(int8_t result)
 {
     if (result == 0)
     {
-        SREG |= 0b00010000; // Set the zero flag
+        SREG |= 0b00000001; // Set the zero flag
     }
     else
     {
-        SREG &= ~0b00010000; // Clear the zero flag
+        SREG &= ~0b00000001; // Clear the zero flag
     }
 }
 
@@ -135,11 +136,11 @@ void _ADD()
     int16_t result = destination + source;
     EX.result = result;
 
-    // Update relevant flags for ADD
-    update_flags(ADD, destination, source, result);
-
     uint8_t rd = id_ex.r1;
     write_register(rd, (int8_t)result);
+
+    // Update relevant flags for ADD
+    update_flags(ADD, destination, source, read_register(rd));
 
     printf("ADD: R%u = %d + %d = %d\n", rd, destination, source, result);
 }
@@ -259,7 +260,7 @@ void _BEQZ()
         execute_stall = 2;
         PC = id_ex.pc + immediate;
     }
-    id_ex.data_hazard=0;
+    // id_ex.data_hazard=0;
 
     printf("BEQZ: R%u = %d, PC = %d\n", id_ex.r1, value, PC);
 }
@@ -362,7 +363,7 @@ void _BR()
         dequeue_id_ex(&id_ex_queue);
     }
    
-    id_ex.data_hazard=0;
+    // id_ex.data_hazard=0;
     decode_stall = 1;
     execute_stall = 2;
     printf("Control hazard detected -> Flushing out previous instructions in the fetch and decode stages...\n");

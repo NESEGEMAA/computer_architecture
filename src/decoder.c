@@ -34,7 +34,7 @@ void decode_stage()
     }
 
     IF_ID if_id = *(peek_if_id(&if_id_queue)); // Instruction Fetch to Decode stage
-    ID_EX id_ex = {0};   // Decode to Execute stage
+    ID_EX id_ex = {UNDEFINED_INT8};   // Decode to Execute stage
 
     uint16_t instruction = if_id.instr; // Get instruction from IF/ID stage
 
@@ -63,7 +63,7 @@ void decode_stage()
         {
             // I-Format: OPCODE (4 bits), R1 (6 bits), IMMEDIATE (6 bits)
             id_ex.r1 = (instruction >> 6) & 0x3F; // bits 11-6
-            id_ex.r2 = 0;                         // not used
+            id_ex.r2 = UNDEFINED_INT8;                         // not used
             // Extract 6-bit immediate
             uint8_t imm = instruction & 0x3F;         // bits 5-0
             id_ex.r1_value = read_register(id_ex.r1); // Read R1 value
@@ -115,16 +115,33 @@ void decode_stage()
                 
             }
             else if (id_ex.r1==executing.r1 && (id_ex.opcode!=LDR && id_ex.opcode!=MOVI)){
-                 id_ex.data_hazard = 1;
+                 id_ex.data_hazard = 1; 
                  id_ex.r1_forward=1;  
-            }
-            else if (id_ex.r2==executing.r1){
+            }            else if (id_ex.r2==executing.r1){
                 id_ex.data_hazard = 1;
                 id_ex.r2_forward=1;
             }
         }
+         printf("immediate: %d  current r1: %d  current r2:%d r1 of execute:%d",id_ex.immediate,id_ex.r1,id_ex.r2,executing.r1);
        }
-       printf("Data hazard signal:%d\n", id_ex.data_hazard);
+      
+        // Print data hazard information
+        if (id_ex.data_hazard)
+        {
+            printf("Data hazard detected: ");
+            if (id_ex.r1_forward)
+                printf("R1 ");
+            if (id_ex.r2_forward)
+                printf("R2 ");
+            printf("\n");
+        }
+        else
+        {
+            printf("No data hazard detected.\n");
+        }
+        
+        // Print data hazard signal
+       printf("Data hazard signal:%d , forward to %d\n", id_ex.data_hazard,id_ex.r1_forward? 1:id_ex.r2_forward? 2:0);
         // Enqueue to Decode to Execute stage
         enqueue_id_ex(&id_ex_queue, &id_ex);
        

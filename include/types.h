@@ -8,6 +8,7 @@
 typedef int8_t data_word_t;         // 8-bit data word
 typedef uint16_t instruction_word_t; // 16-bit instruction word
 #define UNDEFINED_INT16 32768
+#define UNDEFINED_INT8 128
 
 // Forward declarations for recursive pointers
 typedef struct IF_ID IF_ID;
