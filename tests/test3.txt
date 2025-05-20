@@ -1,7 +1,0 @@
-MOVI R1 31
-MOVI R2 20
-EOR R1 R2         ; R1 = 11
-MOVI R5 3
-SAL R5 2          ; R5 = 3 << 2 = 12
-MOVI R6 16
-SAR R6 2          ; R6 = 16 >> 2 = 4

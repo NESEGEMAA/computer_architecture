@@ -1,8 +1,0 @@
-MOVI R1 0
-BEQZ R1 2         ; Branch taken, skip next two lines
-MOVI R2 99        ; Skipped
-MOVI R3 99        ; Skipped
-MOVI R5 31
-ANDI R5 0         ; Edge: R5 = 0
-MOVI R4 28
-ANDI R4 18        ; R4 = 16

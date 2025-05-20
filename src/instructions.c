@@ -6,9 +6,9 @@
 // Helper function to update the Carry flag (C)
 void update_carry_flag(int16_t result)
 {
-    if (result > 255)
+    if (result > 127 | result < 0)
     {
-        SREG |= 0b000010000; // Set the carry flag
+        SREG |= 0b00010000; // Set the carry flag
     }
     else
     {
@@ -23,22 +23,22 @@ void update_overflow_flag(Instruction instruction, int8_t destination, int8_t so
     {
         if (((destination > 0) && (source > 0) && (result < 0)) || ((destination < 0) && (source < 0) && (result > 0)))
         {
-            SREG |= 0b00010000; // Set the overflow flag
+            SREG |= 0b00001000; // Set the overflow flag
         }
         else
         {
-            SREG &= ~0b00010000; // Clear the overflow flag
+            SREG &= ~0b00001000; // Clear the overflow flag
         }
     }
     else if (instruction == SUB)
     {
         if (((destination < 0) && (source > 0) && (result > 0)) || ((destination > 0) && (source < 0) && (result < 0)))
         {
-            SREG |= 0b00010000; // Set the overflow flag
+            SREG |= 0b00001000; // Set the overflow flag
         }
         else
         {
-            SREG &= ~0b00010000; // Clear the overflow flag
+            SREG &= ~0b00001000; // Clear the overflow flag
         }
     }
 }
@@ -136,11 +136,12 @@ void _ADD()
     int16_t result = destination + source;
     EX.result = result;
 
+    // Update relevant flags for ADD
+    update_flags(ADD, destination, source, result);
+    //printf("ADD: result=%d\n", result);
+
     uint8_t rd = id_ex.r1;
     write_register(rd, (int8_t)result);
-
-    // Update relevant flags for ADD
-    update_flags(ADD, destination, source, read_register(rd));
 
     printf("ADD: R%u = %d + %d = %d\n", rd, destination, source, result);
 }
