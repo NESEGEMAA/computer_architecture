@@ -26,7 +26,7 @@ int main()
     // Load and parse assembly program directly into instruction memory
     char assembly_file_path[100];
 
-    printf("Please enter the path to the assembly file (e.g., ../src/CSEN.txt):\n");
+    printf("Please enter the path to the assembly file (e.g., ../tests/test0.txt):\n");
     scanf("%99s", assembly_file_path);  // Safe scanf usage
 
     uint16_t program_size = parse_and_load_assembly_file(assembly_file_path);
